@@ -2,13 +2,52 @@ import datetime
 import time
 import os
 from difflib import SequenceMatcher
+sizeX=50
+def stringMargin(listofItems):
+    size = sizeX-1
+    modifiedList = []
+    for item in listofItems:
+        needed_length =size - len(item)
+        rightIntedent = 10
+        leftIntedent = needed_length - rightIntedent
+        leftMargin = len(item) + leftIntedent
+        item = item.ljust(leftMargin)
+        rightMargin= len(item) + rightIntedent
+        item = item.rjust(rightMargin," ")
+        modifiedList.append(item)
+    return modifiedList
+
+def boxGenerator(listofContent) :
+
+    print(u'\u250F', end="", flush=True) #corner 
+    for i in range (0,sizeX-1) :
+        print(u'\u2501' , end="", flush=True) #top-bar
+    print(u'\u2513') #corner
+
+    for i in range (0,len(listofContent)): 
+    #down
+        print(u'\u2503', end="", flush=True) #vertical pipe
+        
+        print(listofContent[i] ,end="", flush=True)
+        
+        print(u'\u2503') #vertical pipe
+
+    print(u'\u2523', end="", flush=True) #T style pipe
+
+    for i in range (0,sizeX-1) :#bottom
+        print(u'\u2501' , end="", flush=True) #horizontal pipe
+     
+    print(u'\u251B') # corner
+
+    print(u'\u2517',end="", flush=True)
+    for i in range(0,20):
+        print(u'\u2501' , end="", flush=True)
 
 terminated = False
 englishDictReadOnly = open("EnglishWords.txt")
 EnglishWords = englishDictReadOnly.read().split("\n")  # creates a list to contain the words in the file
 englishDictReadOnly.close()
 englishDict = open("EnglishWords.txt", "a")  # opens the file of the english words
-print("S P E L L  C H E C K E R")
 
 
 # checks if the sentence contains any non alpha characters and removes them
@@ -99,7 +138,8 @@ def checkWordsForFiles(listofWords, file):
 
 while not terminated:
     listOfWords = []  # creates a list to contain the words
-    print("\n1. Check a file \n2. Check a sentence\n\n0.Quit\n")
+    listOfScreen1=["S P E L L   C H E C K E R","","1. Check a file","2. Check a sentence","","","0.Quit","",""]
+    boxGenerator(stringMargin(listOfScreen1))
     usrInput = input("Enter choice: ")
     if usrInput == "1":
         fileWrittenCorrect = False
