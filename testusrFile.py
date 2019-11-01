@@ -1,28 +1,42 @@
-from difflib import SequenceMatcher
-# if(usrchoice == 1) :
-# userFileName = input("Enter the name of the file to spellcheck: ")
-# usrFile= open(userFileName)
-# sentence=usrFile.read().split()
-# badChars=[",",".","?"," "]
-# for index in range(0,len(sentence)) :
-#     for unwantedItem in badChars :
-#         if unwantedItem in sentence[index]:
-#             sentence[index] = sentence[index].replace(unwantedItem,"")
-# print(sentence)
-# sentence= "HKELO JFF MT JFFSD"
-# sentence.lower()
-# print(sentence)
-englishDictReadOnly = open("EnglishWords.txt")
-EnglishWords = englishDictReadOnly.read().split("\n")
-list = ["banana","apple","mango", "manra"]
-newList =[]
-sentence = "banan apple manga"
-sentence = sentence.split()
-print(sentence)
-for word in sentence :
-    sutableWord = False
-    for dict in EnglishWords:
-        if sutableWord == EnglishWords :
-            newList.append(sutableWord)
-        else :
-            
+sizeX=50
+
+def stringMargin(listofItems):
+    size = sizeX-1
+    modifiedList = []
+    for item in listofItems:
+        needed_length =size - len(item)
+        rightIntedent = int(needed_length/4)
+        leftIntedent = needed_length - rightIntedent
+        leftMargin = len(item) + leftIntedent
+        item = item.ljust(leftMargin)
+        rightMargin= len(item) + rightIntedent
+        item = item.rjust(rightMargin," ")
+        modifiedList.append(item)
+    return modifiedList
+
+
+def boxGenerator(listofContent) :
+
+    print(u'\u250F', end="", flush=True) #corner 
+    for i in range (0,sizeX-1) :
+        print(u'\u2501' , end="", flush=True) #top-bar
+    print(u'\u2513')
+
+    for i in range (0,len(listofContent)): 
+    #down
+        print(u'\u2503', end="", flush=True)
+        
+        print(listofContent[i] ,end="", flush=True)
+        
+        print(u'\u2503')
+
+    print(u'\u2517', end="", flush=True) #corner 
+
+    for i in range (0,sizeX-1) :#bottom
+        print(u'\u2501' , end="", flush=True)
+     
+    print(u'\u251B') 
+
+
+newList =["H E A D E R  H E A D E R","","apple","","potato"]
+boxGenerator(stringMargin(newList))

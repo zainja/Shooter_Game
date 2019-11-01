@@ -1,7 +1,7 @@
-25-10-2019 15:08:18
+    25-10-2019 15:08:18
 Number of words: 51 
 Number of correctly spelt words: 48 
-Number of incorrectly spelt words: 3 
+Number of incorrectly spelt words: 3
     Number of ignored: 1 
     Number of added to dictionary: 1 
     Number of marked: 1 

@@ -33,7 +33,7 @@ def checkWords(listofWords) :
 while not terminated :
     sentence = input("Enter sentence to spellcheck: ")#takes user input
     listofWords=[] # creates a list to contain the words
-    listofWords=sentenceModification(sentence).split();
+    listofWords=sentenceModification(sentence).split()
     checkWords(listofWords)
     userinput=input("Press q [enter] to quit or any other key [enter] to go again: ")
 
