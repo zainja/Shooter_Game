@@ -100,7 +100,7 @@ def checkWordsForFiles(listofWords, file):
 while not terminated:
     listOfWords = []  # creates a list to contain the words
     print("\n1. Check a file \n2. Check a sentence\n\n0.Quit\n")
-    usrInput = input("Enter choice: ")
+    usrInput = input("Enter Choice: ")
     if usrInput == "1":
         fileWrittenCorrect = False
         userFileNameInput = input("\nEnter the name of the file to spellcheck: ")
