@@ -174,13 +174,13 @@ def checkWordsForFiles(sentence, file):
             for matchedWord in EnglishWords:
                 ratio = SequenceMatcher(None, matchedWord, word).ratio()
                 listOfRaitos.append(ratio)
-                wordsFromRatios.append(matchedWord)
+                #wordsFromRatios.append(matchedWord)
             desiredInput = False
             # insure correct input from the user
             while not desiredInput:
             	#takes the maximum ratio available to the word 
                 requiredWordIndex = listOfRaitos.index(max(listOfRaitos))
-                desiredWord = wordsFromRatios[requiredWordIndex]
+                desiredWord = EnglishWords[requiredWordIndex]
                 boxGenerator(["W O R D   N O T   F O U N D", "", word, "", "did you mean", "", desiredWord])
                 changeWordInput = input(" y or n else will go to the next screen :")
                 print("\n")
