@@ -18,12 +18,12 @@ def stringMargin(listOfItemsForBox):
     # refere to the outer sizeX
     global sizeX
 
-    # the general size the item should have
     # change the box size the box if the item len is > 35
     for item in listOfItemsForBox:
         if len(item) > 35:
             sizeX = 55
         size =sizeX -1
+
     # the final output of the function
     modifiedList = []  
     for item in listOfItemsForBox :
@@ -46,6 +46,7 @@ def stringMargin(listOfItemsForBox):
 
 # function to generate a box
 #takes input for the actual content of the box
+#outputs a box
 def boxGenerator(listOfContent):
 	# clears the terminal before the box so the box stays on top
     os.system('clear')
@@ -111,10 +112,8 @@ fileWordsInformation = {
 
 # checks words in sentences
 def checkWordsForSentences(sentence):
-
     #cleans the sentence from any special characters
     sentence = sentenceModification(sentence)
-
     #splits the sentence into list of words
     listofWords = sentence.split()
     fileWordsInformation["total Number of words"] = len(listofWords)
@@ -122,9 +121,9 @@ def checkWordsForSentences(sentence):
     fileWordsInformation["incorrectly spelt words"] = 0
 
     #irretates through the list of words to find any matching in the dictionary
+    #prints the word is spelt correctly if it was found in the dictionary
     for word in listofWords:
         if word in EnglishWords:
-        #prints the word is spelt correctly if it was found in the dictionary
             boxGenerator(["W O R D     F O U N D", "", "", word,
             "Spelt correctly"])
             #introduce a lag so the screen above does not disapper
@@ -144,7 +143,7 @@ def checkWordsForSentences(sentence):
         tempStr = "Number of " + x + " : " + str(y)
         finalBoxList.append(tempStr)
         #to not print the file related counts
-        if len(finalBoxList) == 4:
+        if len(finalBoxList) == 5:
             break
     #generate final information
     boxGenerator(finalBoxList)
@@ -174,7 +173,6 @@ def checkWordsForFiles(sentence, file):
             for matchedWord in EnglishWords:
                 ratio = SequenceMatcher(None, matchedWord, word).ratio()
                 listOfRaitos.append(ratio)
-                #wordsFromRatios.append(matchedWord)
             desiredInput = False
             # insure correct input from the user
             while not desiredInput:
@@ -222,9 +220,11 @@ def checkWordsForFiles(sentence, file):
         temp2Str = tempStr + "\n"
         finalBoxList.append(tempStr)
         resultFile.write(temp2Str)
+
     #writes all the words after correction to the file 
     resultFile.write(correctedWord)
     resultFile.close()
+
     #generates feedback with word counts, correct, incorrect,ignored...etc
     boxGenerator(finalBoxList)
     dummyInput = input(" enter any key to go next")

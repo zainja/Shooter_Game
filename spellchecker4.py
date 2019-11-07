@@ -22,7 +22,6 @@ def sentenceModification(sentence):
 
     return sentence
 
-
 def checkWords(listofWords):
     correctWordsCount = 0
     incorrectWordsCount = 0

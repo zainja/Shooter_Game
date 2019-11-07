@@ -9,9 +9,8 @@ EnglishWords = file.read().split("\n") #creates a list to contain the words in t
 def sentenceModification (sentence) :
     sentence=sentence.lstrip().rstrip().lower()
     for chars in sentence :
-        if (ord(chars) < 97 or ord(chars) >122) and (not 48<= ord(chars) <= 57) and ord(chars) != 32 :
+        if (ord(chars) < ord("a") or ord(chars) > ord("z")) and ord(chars) != ord(" ") :
             sentence = sentence.replace(chars," ")
-        print(sentence)
 
     return sentence
 #function that checks the words in the listofWords with the dictionary and returns if the word is in the dictionary list or not

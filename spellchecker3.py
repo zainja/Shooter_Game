@@ -14,7 +14,6 @@ def sentenceModification (sentence) :
     for chars in sentence :
         if (ord(chars) < 97 or ord(chars) >122)  and ord(chars) != 32 :
             sentence = sentence.replace(chars,"")
-
     return sentence
 #function that checks the words in the listofWords with the dictionary and returns if the word is in the dictionary list or not
 def checkWords(listofWords) :
