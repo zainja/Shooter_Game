@@ -2,37 +2,39 @@ import datetime, time
 import os
 from difflib import SequenceMatcher
 
+#size of the item length 
+#decided in the stringMargin method
+sizeX = 0
 # predefined width for the box that will contain items
-sizeX = 50  
+DEFAULT_SIZE_X=50  
 sizeY = 8
-# function stringMargin
 # takes an input of list of contents that need to be printed in a box
 # creates an artificial spaces around the item to fit it in the box
 # if the list is less than 8 elemnts it will add empty string items
+#if any item in the list is longer than 50 the box is resized to fit it
 # to keep the box at a standard height
 def stringMargin(listOfItemsForBox):
-    # adds empty elements to the list
+   
+    #resize the height of the box
     listOfItemsForBox.append("")
     while len(listOfItemsForBox) < sizeY: 
        listOfItemsForBox.append("")
+
     # refere to the outer sizeX
     global sizeX
-
-    # change the box size the box if the item len is > 35
-    for item in listOfItemsForBox:
-        if len(item) > 35:
-            sizeX = 55
-        size =sizeX -1
-
+    
+    sizeX = len(max(listOfItemsForBox, key=len)) + 10
+    if sizeX < DEFAULT_SIZE_X : 
+        sizeX = DEFAULT_SIZE_X
     # the final output of the function
     modifiedList = []  
     for item in listOfItemsForBox :
         # calculates needed length
-        needed_length = size - len(item)  
+        needed_length = sizeX - len(item)  
          # a standard right intended
-        rightIndent = 10 
+        rightIndent = 6 
         if item == listOfItemsForBox[0]:
-            rightIndent = 5   
+            rightIndent = 3
         leftIndent = needed_length - rightIndent
         leftMargin = len(item) + leftIndent 
 
@@ -56,7 +58,7 @@ def boxGenerator(listOfContent):
 
     # prints a corner then stays in the same line
     print(u'\u250F', end="", flush=True)
-    for i in range(0, sizeX - 1):
+    for i in range(0, sizeX):
     	# prints the top-bar
         print(u'\u2501', end="", flush=True) 
 	
@@ -65,7 +67,7 @@ def boxGenerator(listOfContent):
 
     #  the body of the box
     for i in range(0, len(listOfContent)):
-         # prints a vertical pipe
+        # prints a vertical pipe
         print(u'\u2503', end="", flush=True)
 
         #prints the actual content with spaces around it
@@ -78,7 +80,7 @@ def boxGenerator(listOfContent):
     print(u'\u2523', end="", flush=True)
 
     # prints the bottom bar
-    for i in range(0, sizeX - 1):
+    for i in range(0, sizeX):
     	# prints a horizontal bar
         print(u'\u2501', end="", flush=True)
 
@@ -89,7 +91,7 @@ def boxGenerator(listOfContent):
     print(u'\u2517', end="", flush=True)
 
     # prints a vertical line
-    for i in range(0, 20):
+    for i in range(0, 15):
         print(u'\u2501', end="", flush=True)
 
 #cleans the sentence from special characters
@@ -158,11 +160,11 @@ def checkWordsForFiles(sentence, file):
     sentence = sentenceModification(sentence)
     listofWords = sentence.split()
     fileWordsInformation["total Number of words"] = len(listofWords)
-    correctedWord = ""
+    correctedWords = ""
     resultFile = open("2" + file, "w")
     for word in listofWords:
         if word in EnglishWords:
-            correctedWord += word + " "
+            correctedWords += word + " "
             fileWordsInformation["correctly spelt words"] += 1
         # case the word is spelt incorrectly
         else:
@@ -180,10 +182,10 @@ def checkWordsForFiles(sentence, file):
                 requiredWordIndex = listOfRaitos.index(max(listOfRaitos))
                 desiredWord = EnglishWords[requiredWordIndex]
                 boxGenerator(["W O R D   N O T   F O U N D", "", word, "", "did you mean", "", desiredWord])
-                changeWordInput = input(" y or n else will go to the next screen :")
+                changeWordInput = input(" Enter [y] or [n]: ")
                 print("\n")
                 if changeWordInput == "y":
-                    correctedWord += desiredWord + " "
+                    correctedWords += desiredWord + " "
                     desiredInput = True
 
                 #in case the user wants to save the word to a dictionary
@@ -197,37 +199,38 @@ def checkWordsForFiles(sentence, file):
                     while not correctInput:
                         boxGenerator(["W O R D   N O T   F O U N D", "", word, "", "1. Ignore the word.",
                                       "2. Mark the word as incorrect.", "3. Add word to dictionary."])
-                        incorrectWordsHandling = input("Enter choice: ")
+                        incorrectWordsHandling = input(" Enter choice: ")
                         print("\n")
                         if incorrectWordsHandling == "1":
-                            correctedWord += "!" + word + "! "
+                            correctedWords += "!" + word + "! "
                             fileWordsInformation["ignored words"] += 1
                             correctInput = True
                         elif incorrectWordsHandling == "2":
-                            correctedWord += "?" + word + "? "
+                            correctedWords += "?" + word + "? "
                             fileWordsInformation["marked words"] += 1
                             correctInput = True
                         elif incorrectWordsHandling == "3":
-                            correctedWord += "*" + word + "* "
+                            correctedWords += "*" + word + "* "
                             fileWordsInformation["words added to dictionary"] += 1
                             englishDict.write("\n" + word)
                             correctInput = True
     #prints the data into the corrected file
     resultFile.write(datetime.datetime.now().strftime("%d-%m-%Y %H:%M:%S\n"))
+    resultFile.write("\n")
     finalBoxList = ["F I N A L   R E S U L T", ""]
     for x, y in fileWordsInformation.items():
         tempStr = "Number of " + x + " : " + str(y)
         temp2Str = tempStr + "\n"
         finalBoxList.append(tempStr)
         resultFile.write(temp2Str)
-
+    resultFile.write("\n")
     #writes all the words after correction to the file 
-    resultFile.write(correctedWord)
+    resultFile.write(correctedWords)
     resultFile.close()
 
     #generates feedback with word counts, correct, incorrect,ignored...etc
     boxGenerator(finalBoxList)
-    dummyInput = input(" enter any key to go next")
+    dummyInput = input(" enter any key to go next ")
 
 # the main screen
 terminated = False
@@ -262,6 +265,7 @@ while not terminated:
                 fileWrittenCorrect = True
                 open(userFileNameInput).close()
                 endTime = time.clock() - startTime
+                #shows the time in microseconds
                 boxGenerator(["C H E C K E D   F I L E", "", "TimeElapsed", str(endTime * 10 ** 6), "microseconds"])
             else:
                 boxGenerator(["L O A D    F I L E", "", "Enter a file name or press q to quit", "then press [enter]"])
@@ -273,7 +277,7 @@ while not terminated:
 
     	# prints sentence screen
         boxGenerator(["S E N T E N C E   M O D E", "", "Enter a sentence", "then press [enter]"])
-        checkWordsForSentences(input("Enter sentence to spellcheck: "))
+        checkWordsForSentences(input(" Enter sentence to spellcheck: "))
         usrInput = input(" Press q [enter] to quit or any other key [enter] to go again: ")
         # termenates the program
         if usrInput == "q":
