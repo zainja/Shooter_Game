@@ -20,18 +20,33 @@ def mouse_movement (event):
         canvas.coords(2,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
         canvas.update()
 def shoot (event):
-    ball = canvas.create_oval(0,0,10,10, fill="red")
-    canvas.coords(ball,110,230,120,240)
+
+    # ball = canvas.create_oval(0,0,10,10, fill="red")
+    # canvas.coords(ball,110,230,120,240)
     pos_of_theline = canvas.coords(2)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    canvas.move(3,unit_vector_i*4,unit_vector_j*4)
+    ball = Ball(canvas,unit_vector_i,unit_vector_j)
+    while True:
+        ball.ball_move()
+        
+        main_window.update_idletasks()  # background
+        main_window.update()  # foreground
+        time.sleep(0.1)
     print("pew")
     
-       
+class Ball:
+    def __init__(self,canvas,x,y):
+        self.canvas = canvas
+        self.id = canvas.create_oval(0,0,10,10)
+        self.canvas.coords(self.id,110,230,120,240)
+        self.x = x
+        self.y = y
+    def ball_move(self):
+        self.canvas.move(self.id, self.x*10, self.y*10)
 main_window = Tk()
 canvas = Canvas(main_window,width=300,height=300)
 rectangle = canvas.create_rectangle(0, 0, 50, 70, fill="black")
@@ -40,5 +55,6 @@ aim_line = canvas.create_line(0,50,50,0)
 canvas.coords(aim_line,110,230,160,200)
 canvas.bind('<Motion>',mouse_movement)
 canvas.bind('<Button-1>',shoot)
+
 canvas.pack()
 main_window.mainloop()
