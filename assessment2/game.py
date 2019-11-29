@@ -19,10 +19,8 @@ def mouse_movement (event):
         unit_vector_j = j_component / vector_length
         canvas.coords(2,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
         canvas.update()
+       
 def shoot (event):
-
-    # ball = canvas.create_oval(0,0,10,10, fill="red")
-    # canvas.coords(ball,110,230,120,240)
     pos_of_theline = canvas.coords(2)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
@@ -32,10 +30,9 @@ def shoot (event):
     ball = Ball(canvas,unit_vector_i,unit_vector_j)
     while True:
         ball.ball_move()
-        
         main_window.update_idletasks()  # background
         main_window.update()  # foreground
-        time.sleep(0.1)
+        time.sleep(0.01)
     print("pew")
     
 class Ball:
@@ -45,8 +42,29 @@ class Ball:
         self.canvas.coords(self.id,110,230,120,240)
         self.x = x
         self.y = y
+        self.hit = 0
     def ball_move(self):
         self.canvas.move(self.id, self.x*10, self.y*10)
+        coords = self.canvas.coords(self.id)
+        if self.hit < 10:
+            if coords[2] >= 300:
+                self.x = -self.x
+                self.hit +=1
+            if coords[0] <= 0:
+                self.x = -self.x
+                self.hit +=1
+            if coords[3] >= 300:
+                self.y = -self.y
+                self.hit +=1
+            if coords[1] <= 0:
+                self.y = -self.y
+                self.hit +=1
+        else:
+            self.canvas.coords(self.id,-1,-1,-1,-1)
+    def ball_hits_something():
+        pass
+
+
 main_window = Tk()
 canvas = Canvas(main_window,width=300,height=300)
 rectangle = canvas.create_rectangle(0, 0, 50, 70, fill="black")
