@@ -51,12 +51,35 @@ def generated_areas(x, y, x1, y1):
         size_y = random.randint(0,y1-rand_y)
     return canvas.create_rectangle(rand_x, rand_y, rand_x+size_x ,rand_y+size_y, fill="red")
 
-def ball_moves():
+def ball_move():
     global ball
-    for i in ball:
-        i.ball_move()
-    # time.sleep(0.01)
-    # ball_moves()
+    global ball_movement
+    # global width 
+    # global height
+    while True :
+        for i in range (0, len(ball)):
+            i_coords = canvas.coords(ball[i])
+            
+            hit = 0
+            if hit < 10:
+                if i_coords[2] >= width:
+                    ball_movement[i][0] = - ball_movement[i][0]
+                    hit +=1
+                if i_coords[0] <= 0:
+                    ball_movement[i][0] = - ball_movement[i][0]
+                    hit +=1
+                if i_coords[3] >= height:
+                    ball_movement[i][1] = - ball_movement[i][1]
+                    hit +=1
+                if i_coords[1] <= 0:
+                    ball_movement[i][1] = - ball_movement[i][1]
+                    hit +=1
+                
+                
+            canvas.move(ball[i], ball_movement[i][0],ball_movement[i][1])
+        canvas.update()
+        time.sleep(0.001)
+    
 
 x = 0
 y = 0
@@ -81,18 +104,17 @@ def mouse_movement (event):
 def shoot (event):
     global ball
     global aim_line
+    global ball_movement
     pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(Ball(canvas,1,1))
-    ball_moves()
-    # while ball.hit <= 10:
-    #     main_window.update_idletasks()  # background
-    #     main_window.update()  # foreground
-    #     time.sleep(0.01)
+    ball.append(canvas.create_oval(pos_of_theline[0],pos_of_theline[1],pos_of_theline[0]+10,pos_of_theline[1]+10))
+    ball_movement.append([unit_vector_i*2,unit_vector_j*2])
+
+    ball_move()
     print("pew")
     
 
