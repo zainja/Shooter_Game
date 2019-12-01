@@ -4,6 +4,7 @@ def mouse_movement (event):
     return canvas.coords(event)
 
 main_window = Tk()
+main_menu = Menu(main_window)
 canvas = Canvas(main_window, width = 300, height=300)
 
 canvas.bind('<Motion>',mouse_movement)
