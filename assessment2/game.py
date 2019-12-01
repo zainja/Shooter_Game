@@ -43,6 +43,13 @@ def generated_areas(x, y, x1, y1):
         size_y = random.randint(0,y1-rand_y)
     return canvas.create_rectangle(rand_x, rand_y, rand_x+size_x ,rand_y+size_y, fill="red")
 
+def ball_moves():
+    global ball
+    for i in ball:
+        i.ball_move()
+    # time.sleep(0.01)
+    # ball_moves()
+
 x = 0
 y = 0
 def mouse_movement (event):
@@ -62,7 +69,9 @@ def mouse_movement (event):
         unit_vector_j = j_component / vector_length
         canvas.coords(aim_line,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
         canvas.update()
+
 def shoot (event):
+    global ball
     global aim_line
     pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
@@ -70,14 +79,15 @@ def shoot (event):
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball = Ball(canvas,unit_vector_i,unit_vector_j)
-    while ball.hit <= 10:
-        ball.ball_move()
-        main_window.update_idletasks()  # background
-        main_window.update()  # foreground
-        time.sleep(0.01)
+    ball.append(Ball(canvas,1,1))
+    ball_moves()
+    # while ball.hit <= 10:
+    #     main_window.update_idletasks()  # background
+    #     main_window.update()  # foreground
+    #     time.sleep(0.01)
     print("pew")
     
+
 class Ball:
     def __init__(self,canvas,x,y):
         global aim_line
@@ -85,12 +95,12 @@ class Ball:
         self.start_coords = canvas.coords(aim_line)
         self.size = 10
         self.id = canvas.create_oval(0,0,10,10)
-        self.canvas.coords(self.id,self.start_coords[0],self.start_coords[1],self.start_coords[0]+10,self.start_coords[1]+10)
+        # self.canvas.coords(self.id,self.start_coords[0],self.start_coords[1],self.start_coords[0]+10,self.start_coords[1]+10)
         self.x = x
         self.y = y
         self.hit = 0
     def ball_move(self):
-        self.canvas.move(self.id, self.x*10, self.y*10)
+        self.canvas.move(self.id, self.x, self.y)
         coords = self.canvas.coords(self.id)
         if self.hit < 10:
             if coords[2] >= width:
@@ -105,14 +115,15 @@ class Ball:
             if coords[1] <= 0:
                 self.y = -self.y
                 self.hit +=1
-        else:
-            self.canvas.coords(self.id,-1,-1,-1,-1)
+        # else:
+        #     self.canvas.coords(self.id,-1,-1,-1,-1)
     def ball_hits_something(element):
         pass
 
 
 main_window = Tk()
 # menu bar
+ball = []
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
