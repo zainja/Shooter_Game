@@ -1,9 +1,10 @@
 from tkinter import Tk, Canvas, Menu, messagebox
 import math
 import time
+import random
 game_running = True
 width = 300
-height = 300
+height = 400
 def change_binding():
     pass
 def pause_game():
@@ -116,17 +117,15 @@ sub_menu.add_cascade(label = 'resolution', menu = res_sub_menu)
 res_sub_menu.add_command(label ="full screen", command = full_res)
 res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
-
 sub_menu.add_command(label = 'change keys', command = change_binding)
 canvas = Canvas(main_window, width = width, height=height)
-canvas.bind('<Motion>',mouse_movement)
 rectangle = canvas.create_rectangle(0, 0, 50, 70, fill="black")
 canvas.move(rectangle,10,230)
 aim_line = canvas.create_line(0,50,50,0)
 canvas.coords(aim_line,110,230,160,200)
 canvas.bind('<Motion>',mouse_movement)
 canvas.bind('<Button-1>',shoot)
-
 canvas.pack()
-
+while True:
+    canvas.update()
 main_window.mainloop()
