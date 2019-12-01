@@ -29,7 +29,8 @@ def small_res():
     global height
     height = 300
 def exit_game():
-    main_window.destroy()
+    if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
+        main_window.destroy()
 
 rectangle_list = []
 def map_generating(height,width):
