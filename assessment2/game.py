@@ -30,6 +30,17 @@ def small_res():
 def exit_game():
     main_window.destroy()
 
+rectangle_list = []
+def map_generating(height,width):
+    global rectangle_list
+    number_of_rectangles = random.randint(1,4)
+    for items in range(0,number_of_rectangles):
+        rect_width = random.randint(40,200)
+        rect_height = random.randint(40,200)
+        rectangle_list.append(canvas.create_rectangle(0, 0,rect_width,rect_height, fill="red"))
+        place = [random.randint(0,width),random.randint(0,height)]
+        canvas.move(rectangle_list[items],place[0],place[1])
+
 x = 0
 y = 0
 def mouse_movement (event):
