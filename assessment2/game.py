@@ -118,37 +118,6 @@ def shoot (event):
     print("pew")
     
 
-class Ball:
-    def __init__(self,canvas,x,y):
-        global aim_line
-        self.canvas = canvas
-        self.start_coords = canvas.coords(aim_line)
-        self.size = 10
-        self.id = canvas.create_oval(0,0,10,10)
-        # self.canvas.coords(self.id,self.start_coords[0],self.start_coords[1],self.start_coords[0]+10,self.start_coords[1]+10)
-        self.x = x
-        self.y = y
-        self.hit = 0
-    def ball_move(self):
-        self.canvas.move(self.id, self.x, self.y)
-        coords = self.canvas.coords(self.id)
-        if self.hit < 10:
-            if coords[2] >= width:
-                self.x = -self.x
-                self.hit +=1
-            if coords[0] <= 0:
-                self.x = -self.x
-                self.hit +=1
-            if coords[3] >= height:
-                self.y = -self.y
-                self.hit +=1
-            if coords[1] <= 0:
-                self.y = -self.y
-                self.hit +=1
-        # else:
-        #     self.canvas.coords(self.id,-1,-1,-1,-1)
-    def ball_hits_something(element):
-        pass
 
 
 main_window = Tk()
