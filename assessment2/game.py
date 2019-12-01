@@ -9,6 +9,14 @@ def change_binding():
     pass
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
+def restart():
+    global ball
+    ball = []
+    global ball_movement
+    ball_movement = []
+    canvas.delete("all")
+
+    game_run()
 def full_res():
     canvas.configure(width = main_menu.winfo_screenwidth() ,height = main_menu.winfo_screenheight())
     global width
