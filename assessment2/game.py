@@ -1,8 +1,35 @@
-from tkinter import Tk, Canvas, Menu
+from tkinter import Tk, Canvas, Menu, messagebox
 import math
 import time
+game_running = True
 width = 300
 height = 300
+def change_binding():
+    pass
+def pause_game():
+    messagebox.showinfo("Pause", "Game paused")
+def full_res():
+    canvas.configure(width = main_menu.winfo_screenwidth() ,height = main_menu.winfo_screenheight())
+    global width
+    width = main_menu.winfo_screenwidth()
+    global height
+    height = main_menu.winfo_screenheight()
+def mid_res():
+    canvas.configure(width = 1200 ,height = 1000)
+    global width
+    width = 1200
+    global height
+    height = 1000
+    # canvas.pack()
+def small_res():
+    canvas.configure(width = 400 ,height = 300)
+    global width
+    width = 400
+    global height
+    height = 300
+def exit_game():
+    main_window.destroy()
+
 x = 0
 y = 0
 def mouse_movement (event):
@@ -47,13 +74,13 @@ class Ball:
         self.canvas.move(self.id, self.x*10, self.y*10)
         coords = self.canvas.coords(self.id)
         if self.hit < 10:
-            if coords[2] >= 300:
+            if coords[2] >= width:
                 self.x = -self.x
                 self.hit +=1
             if coords[0] <= 0:
                 self.x = -self.x
                 self.hit +=1
-            if coords[3] >= 300:
+            if coords[3] >= height:
                 self.y = -self.y
                 self.hit +=1
             if coords[1] <= 0:
@@ -63,29 +90,6 @@ class Ball:
             self.canvas.coords(self.id,-1,-1,-1,-1)
     def ball_hits_something():
         pass
-def change_binding():
-    pass
-def pause_game():
-    pass
-def full_res():
-    canvas.configure(width = main_menu.winfo_screenwidth() ,height = main_menu.winfo_screenheight())
-    global width
-    width = main_menu.winfo_screenwidth()
-    global height
-    height = main_menu.winfo_screenheight()
-def mid_res():
-    canvas.configure(width = 1200 ,height = 1000)
-    global width
-    width = 1200
-    global height
-    height = 1000
-    # canvas.pack()
-def small_res():
-    canvas.configure(width = 400 ,height = 300)
-    global width
-    width = 400
-    global height
-    height = 300
 
 
 main_window = Tk()
@@ -95,6 +99,7 @@ main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
+main_menu.add_command(label = 'Quit', command = exit_game)
 res_sub_menu = Menu(sub_menu)
 sub_menu.add_cascade(label = 'resolution', menu = res_sub_menu)
 res_sub_menu.add_command(label ="full screen", command = full_res)
