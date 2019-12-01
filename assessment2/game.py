@@ -67,7 +67,7 @@ def shoot (event):
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
     ball = Ball(canvas,unit_vector_i,unit_vector_j)
-    while True:
+    while ball.hit <= 10:
         ball.ball_move()
         main_window.update_idletasks()  # background
         main_window.update()  # foreground
