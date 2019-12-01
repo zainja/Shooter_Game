@@ -46,10 +46,12 @@ def generated_areas(x, y, x1, y1):
 x = 0
 y = 0
 def mouse_movement (event):
+    global aim_line
+    global rectangle
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
-    rec_pos= canvas.coords(1)
-    line_pos = canvas.coords(2)
+    rec_pos= canvas.coords(rectangle)
+    line_pos = canvas.coords(aim_line)
     max_movement = rec_pos[2]
     # to not allow the shooter to shoot from the back
     if (x>max_movement):
@@ -58,10 +60,11 @@ def mouse_movement (event):
         vector_length = math.sqrt(i_component**2 + j_component**2)
         unit_vector_i = i_component / vector_length
         unit_vector_j = j_component / vector_length
-        canvas.coords(2,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
+        canvas.coords(aim_line,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
         canvas.update()
 def shoot (event):
-    pos_of_theline = canvas.coords(2)
+    global aim_line
+    pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
     vector_length = math.sqrt(i_component**2 + j_component**2)
@@ -77,9 +80,12 @@ def shoot (event):
     
 class Ball:
     def __init__(self,canvas,x,y):
+        global aim_line
         self.canvas = canvas
+        self.start_coords = canvas.coords(aim_line)
+        self.size = 10
         self.id = canvas.create_oval(0,0,10,10)
-        self.canvas.coords(self.id,110,230,120,240)
+        self.canvas.coords(self.id,self.start_coords[0],self.start_coords[1],self.start_coords[0]+10,self.start_coords[1]+10)
         self.x = x
         self.y = y
         self.hit = 0
@@ -101,7 +107,7 @@ class Ball:
                 self.hit +=1
         else:
             self.canvas.coords(self.id,-1,-1,-1,-1)
-    def ball_hits_something():
+    def ball_hits_something(element):
         pass
 
 
@@ -120,13 +126,13 @@ res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
 canvas = Canvas(main_window, width = width, height=height)
-rectangle = canvas.create_rectangle(0, 0, 50, 70, fill="black")
-canvas.move(rectangle,10,230)
+rectangle = canvas.create_rectangle(0,height*0.7, width*0.1, height*0.4, fill="black")
 aim_line = canvas.create_line(0,50,50,0)
-canvas.coords(aim_line,110,230,160,200)
+rect_coords = canvas.coords(rectangle)
+mid_rect = (rect_coords[1]+rect_coords[3])*0.5
+canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
 canvas.bind('<Motion>',mouse_movement)
 canvas.bind('<Button-1>',shoot)
-map_generating()
 canvas.pack()
 while True:
     canvas.update()
