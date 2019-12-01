@@ -3,8 +3,8 @@ import math
 import time
 import random
 game_running = True
-width = 300
-height = 400
+width = 400
+height = 300
 def change_binding():
     pass
 def pause_game():
@@ -33,15 +33,15 @@ def exit_game():
         main_window.destroy()
 
 rectangle_list = []
-def map_generating(height,width):
-    global rectangle_list
-    number_of_rectangles = random.randint(1,4)
-    for items in range(0,number_of_rectangles):
-        rect_width = random.randint(40,200)
-        rect_height = random.randint(40,200)
-        rectangle_list.append(canvas.create_rectangle(0, 0,rect_width,rect_height, fill="red"))
-        place = [random.randint(0,width),random.randint(0,height)]
-        canvas.move(rectangle_list[items],place[0],place[1])
+def generated_areas(x, y, x1, y1):
+    size_x =0 
+    size_y = 0
+    while size_x < 20 or size_y < 20:
+        rand_x = random.randint(x,x1)
+        rand_y = random.randint(y,y1)
+        size_x = random.randint(0, x1 -rand_x)
+        size_y = random.randint(0,y1-rand_y)
+    return canvas.create_rectangle(rand_x, rand_y, rand_x+size_x ,rand_y+size_y, fill="red")
 
 x = 0
 y = 0
@@ -126,6 +126,7 @@ aim_line = canvas.create_line(0,50,50,0)
 canvas.coords(aim_line,110,230,160,200)
 canvas.bind('<Motion>',mouse_movement)
 canvas.bind('<Button-1>',shoot)
+map_generating()
 canvas.pack()
 while True:
     canvas.update()
