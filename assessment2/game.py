@@ -3,31 +3,36 @@ width = 300
 height = 300
 def mouse_movement (event):
     return canvas.coords(event)
-def res ():
-    pass
+
 def change_binding():
     pass
 def pause_game():
     pass
 def full_res():
     canvas.configure(width = main_menu.winfo_screenwidth() ,height = main_menu.winfo_screenheight())
-    global width = main_menu.winfo_screenwidth()
-    global height = main_menu.winfo_screenheight()
+    global width
+    width = main_menu.winfo_screenwidth()
+    global height
+    height = main_menu.winfo_screenheight()
 def mid_res():
     canvas.configure(width = 1200 ,height = 1000)
-    global width = 1200
-    global height = 1000
+    global width
+    width = 1200
+    global height
+    height = 1000
     # canvas.pack()
 def small_res():
     canvas.configure(width = 400 ,height = 300)
-    global width = 400
-    global height = 300
+    global width
+    width = 400
+    global height
+    height = 300
 
 
 main_window = Tk()
+# menu bar
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
-
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
