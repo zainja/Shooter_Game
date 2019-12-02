@@ -56,6 +56,8 @@ def ball_move():
     global ball_movement
     # global width 
     # global height
+    if len(ball) == 3:
+        canvas.unbind('<Button-1>')
     while True :
         for i in range (0, len(ball)):
             i_coords = canvas.coords(ball[i])
@@ -74,13 +76,25 @@ def ball_move():
                 if i_coords[1] <= 0:
                     ball_movement[i][1] = - ball_movement[i][1]
                     hit +=1
+                if ball_hits_player(i):
+                    ball_movement[i][0] = - ball_movement[i][0]
+
                 
                 
             canvas.move(ball[i], ball_movement[i][0],ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
     
-
+def ball_hits_player(i):
+    global rectangle
+    global ball
+    global ball_movement
+    rectangle_coords = canvas.coords(rectangle)
+    ball_coords = canvas.coords(ball[i])
+    if (ball_coords[1] >= rectangle_coords[1] and ball_coords[1] <= rectangle_coords[3]) or ball_coords[3] >= rectangle_coords[1] and ball_coords[3] <= rectangle_coords[3]:
+        if ball_coords[0] <= rectangle_coords[2]:
+            return True
+    return False 
 x = 0
 y = 0
 def mouse_movement (event):
@@ -111,7 +125,7 @@ def shoot (event):
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(canvas.create_oval(pos_of_theline[0],pos_of_theline[1],pos_of_theline[0]+10,pos_of_theline[1]+10))
+    ball.append(canvas.create_oval(pos_of_theline[0]+3,pos_of_theline[1]+3,pos_of_theline[0]+13,pos_of_theline[1]+13,fill = 'red'))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
 
     ball_move()
