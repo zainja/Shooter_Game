@@ -18,11 +18,14 @@ def restart():
 
     game_run()
 def full_res():
-    canvas.configure(width = main_menu.winfo_screenwidth() ,height = main_menu.winfo_screenheight())
     global width
     width = main_menu.winfo_screenwidth()
     global height
     height = main_menu.winfo_screenheight()
+    canvas.configure(width = width ,height = height)
+    global rectangle
+    canvas.coords(rectangle,0,height*0.7, width*0.1, height*0.4, fill="black")
+    canvas.update()
 def mid_res():
     canvas.configure(width = 1200 ,height = 1000)
     global width
@@ -91,10 +94,19 @@ def ball_hits_player(i):
     global ball_movement
     rectangle_coords = canvas.coords(rectangle)
     ball_coords = canvas.coords(ball[i])
-    if (ball_coords[1] >= rectangle_coords[1] and ball_coords[1] <= rectangle_coords[3]) or ball_coords[3] >= rectangle_coords[1] and ball_coords[3] <= rectangle_coords[3]:
+    if (ball_coords[1] >= rectangle_coords[1] and \
+        ball_coords[1] <= rectangle_coords[3]) or \
+        (ball_coords[3] >= rectangle_coords[1] and \
+        ball_coords[3] <= rectangle_coords[3]):
         if ball_coords[0] <= rectangle_coords[2]:
             return True
     return False 
+def ball_hits_object():
+    pass
+
+def ball_hits_target():
+    pass 
+
 x = 0
 y = 0
 def mouse_movement (event):
@@ -159,12 +171,13 @@ def game_run():
     global rectangle
     global aim_line
     rectangle = canvas.create_rectangle(0,height*0.7, width*0.1, height*0.4, fill="black")
-    aim_line = canvas.create_line(0,50,50,0)
+    aim_line = canvas.create_line(0,width*0.1,height*0.1,0)
     rect_coords = canvas.coords(rectangle)
     mid_rect = (rect_coords[1]+rect_coords[3])*0.5
     canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
+    generated_areas(0,0,width*0.3,height*0.3)
     canvas.pack()
 game_run()
 main_window.mainloop()
