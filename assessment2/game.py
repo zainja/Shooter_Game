@@ -123,10 +123,12 @@ def shoot (event):
 main_window = Tk()
 # menu bar
 ball = []
+ball_movement = []
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
+main_menu.add_command(label = 'restart', command = restart)
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
 main_menu.add_command(label = 'Quit', command = exit_game)
 res_sub_menu = Menu(sub_menu)
@@ -136,14 +138,19 @@ res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
 canvas = Canvas(main_window, width = width, height=height)
-rectangle = canvas.create_rectangle(0,height*0.7, width*0.1, height*0.4, fill="black")
-aim_line = canvas.create_line(0,50,50,0)
-rect_coords = canvas.coords(rectangle)
-mid_rect = (rect_coords[1]+rect_coords[3])*0.5
-canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
-canvas.bind('<Motion>',mouse_movement)
-canvas.bind('<Button-1>',shoot)
-canvas.pack()
-while True:
-    canvas.update()
+rectangle  = None
+aim_line = None
+
+def game_run():
+    global rectangle
+    global aim_line
+    rectangle = canvas.create_rectangle(0,height*0.7, width*0.1, height*0.4, fill="black")
+    aim_line = canvas.create_line(0,50,50,0)
+    rect_coords = canvas.coords(rectangle)
+    mid_rect = (rect_coords[1]+rect_coords[3])*0.5
+    canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
+    canvas.bind('<Motion>',mouse_movement)
+    canvas.bind('<Button-1>',shoot)
+    canvas.pack()
+game_run()
 main_window.mainloop()
