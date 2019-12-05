@@ -15,30 +15,30 @@ def restart():
     global ball_movement
     ball_movement = []
     canvas.delete("all")
-
     game_run()
+
+
 def full_res():
     global width
     width = main_menu.winfo_screenwidth()
     global height
     height = main_menu.winfo_screenheight()
     canvas.configure(width = width ,height = height)
-    global rectangle
-    canvas.coords(rectangle,0,height*0.7, width*0.1, height*0.4, fill="black")
-    canvas.update()
+    game_run()
 def mid_res():
-    canvas.configure(width = 1200 ,height = 1000)
     global width
     width = 1200
     global height
     height = 1000
-    # canvas.pack()
+    canvas.configure(width = width ,height = height)
+    game_run()
 def small_res():
-    canvas.configure(width = 400 ,height = 300)
     global width
     width = 400
     global height
     height = 300
+    canvas.configure(width = width ,height = height)
+    game_run()
 def exit_game():
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         main_window.destroy()
