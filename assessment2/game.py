@@ -47,7 +47,7 @@ rectangle_list = []
 def generated_areas(x, y, x1, y1):
     size_x =0 
     size_y = 0
-    while size_x < 20 or size_y < 20:
+    while size_x < 40 or size_y < 40:
         rand_x = random.randint(x,x1)
         rand_y = random.randint(y,y1)
         size_x = random.randint(0, x1 -rand_x)
@@ -57,8 +57,8 @@ def generated_areas(x, y, x1, y1):
 def ball_move():
     global ball
     global ball_movement
-    # global width 
-    # global height
+    global width 
+    global height
     if len(ball) == 3:
         canvas.unbind('<Button-1>')
     while True :
@@ -89,10 +89,10 @@ def ball_move():
         time.sleep(0.001)
     
 def ball_hits_player(i):
-    global rectangle
+    global player
     global ball
     global ball_movement
-    rectangle_coords = canvas.coords(rectangle)
+    rectangle_coords = canvas.coords(player)
     ball_coords = canvas.coords(ball[i])
     if (ball_coords[1] >= rectangle_coords[1] and \
         ball_coords[1] <= rectangle_coords[3]) or \
@@ -110,11 +110,9 @@ def ball_hits_target():
 x = 0
 y = 0
 def mouse_movement (event):
-    global aim_line
-    global rectangle
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
-    rec_pos= canvas.coords(rectangle)
+    rec_pos= canvas.coords(player)
     line_pos = canvas.coords(aim_line)
     max_movement = rec_pos[2]
     # to not allow the shooter to shoot from the back
@@ -142,14 +140,63 @@ def shoot (event):
 
     ball_move()
     print("pew")
+
+def place_player():
+    global player
+    global aim_line
+    player_box = random.randint(0,len(grid_3x3)-1)
+    # generate point to place the box
+    # x coords
+    point_x = random.uniform(grid_3x3[player_box][0],grid_3x3[player_box][2])
+    point_x2 =  point_x + rec_size_x 
+    while point_x2 >= grid_3x3[player_box][2]:
+        point_x = random.uniform(grid_3x3[player_box][0],grid_3x3[player_box][2])
+        point_x2 =  point_x + rec_size_x 
+
+    # generate y coords 
+    point_y = random.uniform(grid_3x3[player_box][1],grid_3x3[player_box][3])
+    point_y2 = point_y + rec_size_y
+    while point_y2 >= grid_3x3[player_box][3]:
+        point_y = random.uniform(grid_3x3[player_box][1],grid_3x3[player_box][3])
+        point_y2 = point_y + rec_size_y
+    player = canvas.create_rectangle(point_x,point_y,point_x2,point_y2)
+    aim_line = canvas.create_line(0,width*0.1,height*0.1,0)
+    rect_coords = canvas.coords(player)
+    mid_rect = (rect_coords[1]+rect_coords[3])*0.5
+    canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
+
+def game_run():
+    global main_window
+    global canvas
+    global height 
+    global width
+    place_player()
+    for i in grid_3x3:
+        canvas.create_rectangle(i)
+    canvas.bind('<Motion>',mouse_movement)
+    canvas.bind('<Button-1>',shoot)
+    generated_areas(0,0,width*0.3,height*0.3)
+    canvas.pack()
+    main_window.mainloop()
     
 
 
 
 main_window = Tk()
-# menu bar
+grid_3x3 =[
+            [0,0,(width/3),(height/3)],[(width/3),0,(width*2/3),(height/3)],[(width*2/3),0,width,(height/3)],
+            [0,(height/3),(width/3),(height*2/3)],[(width/3),(height/3),(width*2/3),(height*2/3)],[(width*2/3),(height/3),width,(height*2/3)],
+            [0,(height*2/3),(width/3),height],[(width/3),(height*2/3),(width*2/3),height],[(width*2/3),(height*2/3),width,height]]
 ball = []
 ball_movement = []
+print( len(grid_3x3))
+canvas = Canvas(main_window, width = width, height=height)
+for i in grid_3x3:
+    canvas.create_rectangle(i)
+rec_size_x = width*0.09
+rec_size_y = height*0.2
+player = None
+aim_line = None
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
@@ -163,21 +210,5 @@ res_sub_menu.add_command(label ="full screen", command = full_res)
 res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
-canvas = Canvas(main_window, width = width, height=height)
-rectangle  = None
-aim_line = None
 
-def game_run():
-    global rectangle
-    global aim_line
-    rectangle = canvas.create_rectangle(0,height*0.7, width*0.1, height*0.4, fill="black")
-    aim_line = canvas.create_line(0,width*0.1,height*0.1,0)
-    rect_coords = canvas.coords(rectangle)
-    mid_rect = (rect_coords[1]+rect_coords[3])*0.5
-    canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
-    canvas.bind('<Motion>',mouse_movement)
-    canvas.bind('<Button-1>',shoot)
-    generated_areas(0,0,width*0.3,height*0.3)
-    canvas.pack()
 game_run()
-main_window.mainloop()
