@@ -9,10 +9,8 @@ def change_binding():
     pass
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
-def restart():
-    global ball,main_menu,canvas,height,width,player,aim_line,enemy_box
+def restart(ball,main_menu,canvas,height,width,player,aim_line,enemy_box,ball_movement):
     ball = []
-    global ball_movement
     ball_movement = []
     canvas.delete("all")
     game_run(main_menu,canvas,height,width,player,aim_line,enemy_box)
@@ -42,7 +40,7 @@ def small_res():
     canvas.configure(width = width ,height = height)
     restart()
 
-def exit_game():
+def exit_game(main_window):
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         main_window.destroy()
 
@@ -238,9 +236,9 @@ main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
-main_menu.add_command(label = 'restart', command = restart)
+main_menu.add_command(label = 'restart', command = lambda : restart(ball,main_menu,canvas,height,width,player,aim_line,enemy_box,ball_movement))
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
-main_menu.add_command(label = 'Quit', command = exit_game)
+main_menu.add_command(label = 'Quit', command = lambda: exit_game(main_window))
 res_sub_menu = Menu(sub_menu)
 sub_menu.add_cascade(label = 'resolution', menu = res_sub_menu)
 res_sub_menu.add_command(label ="full screen", command = full_res)
