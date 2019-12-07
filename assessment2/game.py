@@ -66,46 +66,30 @@ def ball_move():
         for i in range (0, len(ball)):
             i_coords = canvas.coords(ball[i])
             
-            hit = 0
-            if hit < 10:
             if i_coords[2] >= width:
                 ball_movement[i][0] = - ball_movement[i][0]
-                    hit +=1
             if i_coords[0] <= 0:
                 ball_movement[i][0] = - ball_movement[i][0]
-                    hit +=1
-                if i_coords[3] >= height:
-                    ball_movement[i][1] = - ball_movement[i][1]
-                    hit +=1
-                if i_coords[1] <= 0:
-                    ball_movement[i][1] = - ball_movement[i][1]
-                    hit +=1
-                if ball_hits_player(i):
-                    ball_movement[i][0] = - ball_movement[i][0]
-
-                
-                
+            if i_coords[3] >= height:
+                ball_movement[i][1] = - ball_movement[i][1]
+            if i_coords[1] <= 0:
+                ball_movement[i][1] = - ball_movement[i][1]
+            
             canvas.move(ball[i], ball_movement[i][0],ball_movement[i][1])
+
         canvas.update()
         time.sleep(0.001)
     
 def ball_hits_player(i):
-    global player
     global ball
-    global ball_movement
-    rectangle_coords = canvas.coords(player)
-    ball_coords = canvas.coords(ball[i])
-    if (ball_coords[1] >= rectangle_coords[1] and \
-        ball_coords[1] <= rectangle_coords[3]) or \
-        (ball_coords[3] >= rectangle_coords[1] and \
-        ball_coords[3] <= rectangle_coords[3]):
-        if ball_coords[0] <= rectangle_coords[2]:
-            return True
-    return False 
+    global player
+    i_coords = canvas.coords(ball[i])
+    player_coords = canvas.coords(player)
+
 def ball_hits_object():
     pass
 
-def ball_hits_target():
+def ball_hits_enemy():
     pass 
 
 x = 0
@@ -136,68 +120,86 @@ def shoot (event):
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(canvas.create_oval(pos_of_theline[0]+3,pos_of_theline[1]+3,pos_of_theline[0]+13,pos_of_theline[1]+13,fill = 'red'))
+    ball.append(canvas.create_oval(pos_of_theline[0]+2,pos_of_theline[1]+2,pos_of_theline[0]+12,pos_of_theline[1]+12,fill = 'red'))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
-
     ball_move()
-    print("pew")
 
-def place_player():
-    global player
-    global aim_line
-    player_box = random.randint(0,len(grid_3x3)-1)
+def place_player(grid):
+    global player_box,player,aim_line
+    player_box = random.randint(0,len(grid)-1)
     # generate point to place the box
     # x coords
-    point_x = random.uniform(grid_3x3[player_box][0],grid_3x3[player_box][2])
+    point_x = random.uniform(grid[player_box][0],grid[player_box][2])
     point_x2 =  point_x + rec_size_x 
-    while point_x2 >= grid_3x3[player_box][2]:
-        point_x = random.uniform(grid_3x3[player_box][0],grid_3x3[player_box][2])
+    while point_x2 >= grid[player_box][2]:
+        point_x = random.uniform(grid[player_box][0],grid[player_box][2])
         point_x2 =  point_x + rec_size_x 
-
     # generate y coords 
-    point_y = random.uniform(grid_3x3[player_box][1],grid_3x3[player_box][3])
+    point_y = random.uniform(grid[player_box][1],grid[player_box][3])
     point_y2 = point_y + rec_size_y
-    while point_y2 >= grid_3x3[player_box][3]:
-        point_y = random.uniform(grid_3x3[player_box][1],grid_3x3[player_box][3])
+    while point_y2 >= grid[player_box][3]:
+        point_y = random.uniform(grid[player_box][1],grid[player_box][3])
         point_y2 = point_y + rec_size_y
+
     player = canvas.create_rectangle(point_x,point_y,point_x2,point_y2)
     aim_line = canvas.create_line(0,width*0.1,height*0.1,0)
     rect_coords = canvas.coords(player)
     mid_rect = (rect_coords[1]+rect_coords[3])*0.5
     canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
 
-def game_run():
-    global main_window
-    global canvas
-    global height 
-    global width
-    place_player()
-    for i in grid_3x3:
+def place_enemy(grid):
+    global enemy_box,enemy
+    enemy_box = random.randint(0,len(grid)-1)
+    while enemy_box == player_box:
+        enemy_box = random.randint(0,len(grid)-1)
+    
+    point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
+    point_x2 =  point_x + rec_size_x 
+    while point_x2 >= grid[enemy_box][2]:
+        point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
+        point_x2 =  point_x + rec_size_x 
+    # generate y coords 
+    point_y = random.uniform(grid[enemy_box][1],grid[enemy_box][3])
+    point_y2 = point_y + rec_size_y
+    while point_y2 >= grid[enemy_box][3]:
+        point_y = random.uniform(grid[enemy_box][1],grid[enemy_box][3])
+        point_y2 = point_y + rec_size_y    
+    enemy = canvas.create_rectangle(point_x,point_y,point_x2,point_y2, fill = "green")    
+
+def create_grid(height,width):
+    return [
+    [0,0,(width/3),(height/3)],[(width/3),0,(width*2/3),(height/3)],[(width*2/3),0,width,(height/3)],
+    [0,(height/3),(width/3),(height*2/3)],[(width/3),(height/3),(width*2/3),(height*2/3)],[(width*2/3),(height/3),width,(height*2/3)],
+    [0,(height*2/3),(width/3),height],[(width/3),(height*2/3),(width*2/3),height],[(width*2/3),(height*2/3),width,height]
+    ]
+
+
+def game_run(window,canvas,height,width,player,aim_line,enemy):
+    grid = create_grid(height,width)
+    for i in grid:
         canvas.create_rectangle(i)
+    place_player(grid)
+    place_enemy(grid)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
-    generated_areas(0,0,width*0.3,height*0.3)
+    #generated_areas(0,0,width*0.3,height*0.3)
     canvas.pack()
-    main_window.mainloop()
-    
+    window.mainloop()  
 
-
-
+### var decleration ###
 main_window = Tk()
-grid_3x3 =[
-            [0,0,(width/3),(height/3)],[(width/3),0,(width*2/3),(height/3)],[(width*2/3),0,width,(height/3)],
-            [0,(height/3),(width/3),(height*2/3)],[(width/3),(height/3),(width*2/3),(height*2/3)],[(width*2/3),(height/3),width,(height*2/3)],
-            [0,(height*2/3),(width/3),height],[(width/3),(height*2/3),(width*2/3),height],[(width*2/3),(height*2/3),width,height]]
+grid = []
 ball = []
 ball_movement = []
-print( len(grid_3x3))
-canvas = Canvas(main_window, width = width, height=height)
-for i in grid_3x3:
-    canvas.create_rectangle(i)
-rec_size_x = width*0.09
-rec_size_y = height*0.2
 player = None
 aim_line = None
+enemy = None
+player_box = 0
+enemy_box = 0 
+canvas = Canvas(main_window, width = width, height=height)
+rec_size_x = width*0.09
+rec_size_y = height*0.2
+
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
@@ -212,4 +214,4 @@ res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
 
-game_run()
+game_run(main_menu,canvas,height,width,player,aim_line,enemy_box)
