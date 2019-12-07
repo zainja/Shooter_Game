@@ -17,33 +17,34 @@ def restart():
     canvas.delete("all")
     game_run()
 
-
 def full_res():
     global width
     width = main_menu.winfo_screenwidth()
     global height
     height = main_menu.winfo_screenheight()
     canvas.configure(width = width ,height = height)
-    game_run()
+    restart()
+
 def mid_res():
     global width
     width = 1200
     global height
     height = 1000
     canvas.configure(width = width ,height = height)
-    game_run()
+    restart()
+
 def small_res():
     global width
     width = 400
     global height
     height = 300
     canvas.configure(width = width ,height = height)
-    game_run()
+    restart()
+
 def exit_game():
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         main_window.destroy()
 
-rectangle_list = []
 def generated_areas(x, y, x1, y1):
     size_x =0 
     size_y = 0
@@ -67,11 +68,11 @@ def ball_move():
             
             hit = 0
             if hit < 10:
-                if i_coords[2] >= width:
-                    ball_movement[i][0] = - ball_movement[i][0]
+            if i_coords[2] >= width:
+                ball_movement[i][0] = - ball_movement[i][0]
                     hit +=1
-                if i_coords[0] <= 0:
-                    ball_movement[i][0] = - ball_movement[i][0]
+            if i_coords[0] <= 0:
+                ball_movement[i][0] = - ball_movement[i][0]
                     hit +=1
                 if i_coords[3] >= height:
                     ball_movement[i][1] = - ball_movement[i][1]
