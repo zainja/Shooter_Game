@@ -132,12 +132,29 @@ def shoot (event):
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
     ball_move()
 
-def create_grid(height,width):
-    return [
-    [0,0,(width/3),(height/3)],[(width/3),0,(width*2/3),(height/3)],[(width*2/3),0,width,(height/3)],
-    [0,(height/3),(width/3),(height*2/3)],[(width/3),(height/3),(width*2/3),(height*2/3)],[(width*2/3),(height/3),width,(height*2/3)],
-    [0,(height*2/3),(width/3),height],[(width/3),(height*2/3),(width*2/3),height],[(width*2/3),(height*2/3),width,height]
-    ]
+def create_grid(height,width,total):
+    
+    total_grid = []
+    one_box = []
+    x = 0
+    y = 0
+    width_of_box = width/ total
+    height_of_box = height/total
+    number_of_boxes = total**2
+    for box in range (0,number_of_boxes):
+        one_box.append(x)
+        one_box.append(y)
+        x += width_of_box
+        one_box.append(x)
+        one_box.append(y+height_of_box)
+        total_grid.append(one_box)
+        one_box = []
+        if x == width:
+            y += height_of_box
+            x = 0
+    return total_grid
+
+
 def place_player(grid):
     global player_box,player,aim_line
     player_box = random.randint(0,len(grid)-1)
