@@ -44,6 +44,18 @@ def exit_game(main_window):
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         main_window.destroy()
 
+def player_won():
+    global level
+    level +=1
+    messagebox.showinfo("Game WON", "CONGRATS")
+    restart()
+def player_lost():
+    global level
+    level -=1
+    if level < 1:
+        level = 1
+    messagebox.showinfo("LOST " , "YOU LOOOOOOOOSEEE")
+    restart()
 def ball_move():
     global ball,ball_movement,width ,height, player, list_of_boxes,enemy
     if len(ball) == 3:
