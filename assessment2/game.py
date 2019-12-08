@@ -276,6 +276,15 @@ def generated_areas(list_of_grid):
 def game_run(window,canvas,height,width,player,aim_line,enemy):
     global list_of_boxes
     total = 0
+    level_x_pos = width*0.1
+    level_y_pos = (0.1*height)/3
+    scroe_x_pos = width*0.7
+    score_y_pos = level_y_pos
+    level_txt = "level: " + str(level)
+    score_txt = "score: " + str(score)
+    bg_for_txt = canvas.create_rectangle(0,0,width,height*0.1,fill="red")
+    level_label = canvas.create_text(level_x_pos,level_y_pos,font="Times 20 italic bold",text = level_txt ,anchor = "nw")
+    score_label = canvas.create_text(scroe_x_pos,score_y_pos,font="Times 20 italic bold",text = score_txt ,anchor = "nw")
     if level == 1:
         total = 2
     if level == 2:
