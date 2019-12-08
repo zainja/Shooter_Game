@@ -182,12 +182,12 @@ def place_player(grid):
     mid_rect = (rect_coords[1]+rect_coords[3])*0.5
     canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
 
-def place_enemy(grid):
-    global enemy_box,enemy
-    enemy_box = random.randint(0,len(grid)-1)
+def place_enemy(grid,rec_size_x,rec_size_y):
+    global enemy_box,enemy, player_box, level
 
-    while  abs(enemy_box - player_box) == 1:
-        enemy_box = random.randint(0,len(grid)-1)
+    width_of_box = grid[0][2] - grid[0][0]
+    height_of_box = grid[0][3] - grid[0][1]
+    enemy_box = random.randint(0,len(grid)-1)
 
     while enemy_box == player_box:
         enemy_box = random.randint(0,len(grid)-1)
@@ -205,6 +205,40 @@ def place_enemy(grid):
         point_y2 = point_y + rec_size_y    
     enemy = canvas.create_rectangle(point_x,point_y,point_x2,point_y2, fill = "green")  
 
+def check_placement(grid,enemy_box,player_box):
+
+    if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][0] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][1]:
+        return True
+    # corner 2
+    if grid[enemy_box][2] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][2] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][2] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][1]:
+        return True
+    # corner 3
+    if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][3] == grid[player_box][1]:
+        return True
+    if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][3] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][0] == grid[player_box][0] and grid[enemy_box][3] == grid[player_box][1]:
+        return True
+    # corner 4
+    if grid[enemy_box][2] == grid[player_box][0] and grid[enemy_box][3] == grid[player_box][1]:
+        return True
+    if grid[enemy_box][2] == grid[player_box][0] and grid[enemy_box][3] == grid[player_box][3]:
+        return True
+    if grid[enemy_box][2] == grid[player_box][2] and grid[enemy_box][3] == grid[player_box][1]:
+        return True
+    # equal
+    if  enemy_box == player_box:
+        return True
+    return False
+
 def generated_areas(list_of_grid):
     global enemy_box,player_box
     generated_boxes = [] 
@@ -216,7 +250,9 @@ def generated_areas(list_of_grid):
             y = list_of_grid[i][1]
             x1 = list_of_grid[i][2]
             y1 = list_of_grid[i][3]
-            while size_x < 40 or size_y < 40:
+            rand_x = random.uniform(x,x1)
+            rand_y = random.uniform(y,y1)
+            while size_x < ((x1-x) *0.3 ) or size_y < ((y1-y)*0.2):
                 rand_x = random.uniform(x,x1)
                 rand_y = random.uniform(y,y1)
                 size_x = random.uniform(0, x1 -rand_x)
