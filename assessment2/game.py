@@ -107,17 +107,21 @@ def mouse_movement (event):
     y = canvas.canvasy(event.y)
     rec_pos= canvas.coords(player)
     line_pos = canvas.coords(aim_line)
-    max_movement = rec_pos[2]
-    # to not allow the shooter to shoot from the back
-    if (x>max_movement):
-        i_component = x - line_pos[0]
-        j_component = y - line_pos[1]
-        vector_length = math.sqrt(i_component**2 + j_component**2)
-        unit_vector_i = i_component / vector_length
-        unit_vector_j = j_component / vector_length
-        canvas.coords(aim_line,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
+    if (x<rec_pos[2]):
+        line_pos[0] = rec_pos[0]
+        line_pos[2] = rec_pos[0]- 50
         canvas.update()
-
+    if (x> rec_pos[2]):
+        line_pos[0] = rec_pos[2]
+        line_pos[2] = rec_pos[2] + 50
+    i_component = x - line_pos[0]
+    j_component = y - line_pos[1]
+    vector_length = math.sqrt(i_component**2 + j_component**2)
+    unit_vector_i = i_component / vector_length
+    unit_vector_j = j_component / vector_length
+    canvas.coords(aim_line,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
+    canvas.update()
+        
 def shoot (event):
     global ball
     global aim_line
@@ -128,7 +132,7 @@ def shoot (event):
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(canvas.create_oval(pos_of_theline[0]+2,pos_of_theline[1]+2,pos_of_theline[0]+12,pos_of_theline[1]+12,fill = 'red'))
+    ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+12,pos_of_theline[3]+12,fill = 'red'))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
     ball_move()
 
