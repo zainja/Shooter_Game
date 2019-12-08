@@ -227,11 +227,18 @@ def generated_areas(list_of_grid):
 
 def game_run(window,canvas,height,width,player,aim_line,enemy):
     global list_of_boxes
-    grid = create_grid(height,width)
-    for i in grid:
-        canvas.create_rectangle(i)
-    place_player(grid)
-    place_enemy(grid)
+    total = 0
+    if level == 1:
+        total = 2
+    if level == 2:
+        total = 3
+    if level == 3:
+        total = 4
+    if level >= 4:
+        total = 5
+    grid = create_grid(height,width,total)
+    place_player(grid,50,70)
+    place_enemy(grid,50,70)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
     list_of_boxes = generated_areas(grid)
@@ -250,14 +257,12 @@ enemy = None
 player_box = 0
 enemy_box = 0 
 canvas = Canvas(main_window, width = width, height=height)
-rec_size_x = width*0.09
-rec_size_y = height*0.2
-
+level = 1
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
-main_menu.add_command(label = 'restart', command = lambda : restart(ball,main_menu,canvas,height,width,player,aim_line,enemy_box,ball_movement))
+main_menu.add_command(label = 'restart', command = restart)
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
 main_menu.add_command(label = 'Quit', command = lambda: exit_game(main_window))
 res_sub_menu = Menu(sub_menu)
