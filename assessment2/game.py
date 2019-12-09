@@ -1,19 +1,34 @@
-from tkinter import Tk, Canvas, Menu, messagebox
+from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage
 import math
 import time
 import random
-game_running = True
-width = 400
-height = 300
+width = 800
+height = 600
+
+
 def change_binding():
     pass
+
+
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
-def restart(ball,main_menu,canvas,height,width,player,aim_line,enemy_box,ball_movement):
+
+
+def restart(mode):
+    global main_menu, canvas, height, width, player, aim_line, enemy_box,\
+            ball, list_of_boxes, grid, ball_movement, player_box, level, score
+    if mode == 0:
+        level = 1
+        score = 0
     ball = []
+    list_of_boxes = []
+    grid = []
     ball_movement = []
+    enemy_box = 0
+    player_box = 0
+    place_player
     canvas.delete("all")
-    game_run(main_menu,canvas,height,width,player,aim_line,enemy_box)
+    game_run(main_menu, canvas, height, width)
 
 
 def full_res():
@@ -21,41 +36,46 @@ def full_res():
     width = main_menu.winfo_screenwidth()
     global height
     height = main_menu.winfo_screenheight()
-    canvas.configure(width = width ,height = height)
+    canvas.configure(width=width, height=height)
     restart()
+
 
 def mid_res():
     global width
     width = 1200
     global height
     height = 1000
-    canvas.configure(width = width ,height = height)
+    canvas.configure(width=width, height=height)
     restart()
+
 
 def small_res():
     global width
     width = 400
     global height
     height = 300
-    canvas.configure(width = width ,height = height)
+    canvas.configure(width=width, height=height)
     restart()
+
 
 def exit_game(main_window):
     if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
         main_window.destroy()
 
 def player_won():
-    global level
+    global level, score
     level +=1
+    score += 100
     messagebox.showinfo("Game WON", "CONGRATS")
-    restart()
+    restart(1)
 def player_lost():
-    global level
+    global level, score
     level -=1
+    score = 0
     if level < 1:
         level = 1
-    messagebox.showinfo("LOST " , "YOU LOOOOOOOOSEEE")
-    restart()
+    messagebox.showinfo("LOST YA BASIC" , "YOU LOOOOOOOOSEEE")
+    restart(1)
 def ball_move():
     global ball,ball_movement,width ,height, player, list_of_boxes,enemy
     if len(ball) == 3:
@@ -70,51 +90,55 @@ def ball_move():
                 ball_movement[i][0] = - ball_movement[i][0]
             if i_coords[3] >= height:
                 ball_movement[i][1] = - ball_movement[i][1]
-            if i_coords[1] <= 0:
+            if i_coords[1] <= 0.1*height:
                 ball_movement[i][1] = - ball_movement[i][1]
             if ball_hits_object(ball[i],player):
-                ball_movement[i]= [0,0]
-                pause_game()
-                restart()
+                player_lost()
             if ball_hits_object(ball[i],enemy):
-                pause_game()
-                restart()
-            
-            for j in range (0,len(list_of_boxes)):
-                if ball_hits_object(ball[i],list_of_boxes[j]) == 1:
-                    ball_movement[i][0] = - ball_movement[i][0]
-                if ball_hits_object(ball[i], list_of_boxes[j]) == 2:
-                    ball_movement[i][1] = - ball_movement[i][1]
-            
+                player_won()
+            if len(list_of_boxes) != 0:
+                for j in range(len(list_of_boxes)):
+                    box_coords = canvas.coords(list_of_boxes[j])
+                    #i_coords = canvas.coords(ball[i])
+                    if (i_coords[0] > box_coords[0] and i_coords[0] < box_coords[2]) or (i_coords[2] > box_coords[0] and i_coords[2] < box_coords[2]):
+                        #coming from left side
+                        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
+                                ball_movement[i][1] = - ball_movement[i][1]
+                        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
+                                ball_movement[i][1] = - ball_movement[i][1]
+
+                    if (i_coords[1] > box_coords[1] and i_coords[1] < box_coords[3]) or (i_coords[3] > box_coords[1] and i_coords[3] < box_coords[3]):
+                        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
+                                ball_movement[i][0] = - ball_movement[i][0]
+                        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
+                                ball_movement[i][0] = - ball_movement[i][0]              
             canvas.move(ball[i], ball_movement[i][0],ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
-    
+
 def ball_hits_object(i,j):
     i_coords = canvas.coords(i)
     box_coords = canvas.coords(j)
+    #check for right and left 
+    if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
+        #coming from left side
+        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
+            return True
+        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
+            return True
+    if (i_coords[0] >= box_coords[0] and i_coords[0] <= box_coords[2]) or (i_coords[2] >= box_coords[0] and i_coords[2] <= box_coords[2]):
+        #coming from left side
+        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
+            return True
+        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
+            return True
 
-    if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]) and \
-        (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords [3]):
-        return 1
-    # from left to right
-    if (i_coords[0] <= box_coords[0]) and (i_coords[2] >= box_coords[0] and \
-        i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords [3] ):
-        return 1
-    # top to bottom
-    if (i_coords[0] >= box_coords[0]) and (i_coords[0] <= box_coords[2] and \
-        i_coords[1] <= box_coords[1] and i_coords[3] >= box_coords [1] ):
-        return 2
-    # bottom to top
-    if (i_coords[0] >= box_coords[0]) and (i_coords[0] <= box_coords[2] and \
-        i_coords[1] <= box_coords[3] and i_coords[3] >= box_coords [3] ):
-        return 2
-   
-    return 0
+    return False
     
 
 
 def mouse_movement (event):
+    global player_direction
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos= canvas.coords(player)
@@ -144,18 +168,20 @@ def shoot (event):
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+12,pos_of_theline[3]+12,fill = 'red'))
+    ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+10,pos_of_theline[3]+10,fill= "red"))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
     ball_move()
 
+
+
 def create_grid(height,width,total):
-    
+    main_height = height*0.9
     total_grid = []
     one_box = []
     x = 0
-    y = 0
+    y = height*0.1
     width_of_box = width/ total
-    height_of_box = height/total
+    height_of_box = main_height/total
     number_of_boxes = total**2
     for box in range (0,number_of_boxes):
         one_box.append(x)
@@ -171,7 +197,7 @@ def create_grid(height,width,total):
     return total_grid
 
 
-def place_player(grid):
+def place_player(grid,rec_size_x,rec_size_y):
     global player_box,player,aim_line
     player_box = random.randint(0,len(grid)-1)
     # generate point to place the box
@@ -194,16 +220,14 @@ def place_player(grid):
     mid_rect = (rect_coords[1]+rect_coords[3])*0.5
     canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
 
-def place_enemy(grid,rec_size_x,rec_size_y):
-    global enemy_box,enemy, player_box, level
-
-    width_of_box = grid[0][2] - grid[0][0]
-    height_of_box = grid[0][3] - grid[0][1]
+def place_enemy(grid,rec_size_x,rec_size_y,level):
+    global enemy_box,enemy, player_box
     enemy_box = random.randint(0,len(grid)-1)
-
     while enemy_box == player_box:
         enemy_box = random.randint(0,len(grid)-1)
-    
+    if level >=3 :
+        while check_placement(grid,enemy_box,player_box):
+            enemy_box = random.randint(0,len(grid))
     point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
     point_x2 =  point_x + rec_size_x 
     while point_x2 >= grid[enemy_box][2]:
@@ -218,7 +242,6 @@ def place_enemy(grid,rec_size_x,rec_size_y):
     enemy = canvas.create_rectangle(point_x,point_y,point_x2,point_y2, fill = "green")  
 
 def check_placement(grid,enemy_box,player_box):
-
     if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][3]:
@@ -273,7 +296,7 @@ def generated_areas(list_of_grid):
     return generated_boxes  
 
 
-def game_run(window,canvas,height,width,player,aim_line,enemy):
+def game_run(window, canvas,height,width):
     global list_of_boxes
     total = 0
     level_x_pos = width*0.1
@@ -294,19 +317,20 @@ def game_run(window,canvas,height,width,player,aim_line,enemy):
     if level >= 4:
         total = 5
     grid = create_grid(height,width,total)
-    place_player(grid,50,70)
+    place_player(grid,50,70,)
     place_enemy(grid,50,70)
+    list_of_boxes = generated_areas(grid)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
-    list_of_boxes = generated_areas(grid)
     canvas.pack()
     window.mainloop()  
 
 ### var decleration ###
 main_window = Tk()
+main_window.geometry(str(width)+"x"+str(height))
 grid = []
 ball = []
-list_of_boxes = None
+list_of_boxes = []
 ball_movement = []
 player = None
 aim_line = None
@@ -315,11 +339,12 @@ player_box = 0
 enemy_box = 0 
 canvas = Canvas(main_window, width = width, height=height)
 level = 1
+score = 0
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
 main_menu.add_command(label = 'pause', command = pause_game)
-main_menu.add_command(label = 'restart', command = restart)
+main_menu.add_command(label = 'restart', command = lambda:restart(0))
 main_menu.add_cascade(label = 'settings', menu = sub_menu)
 main_menu.add_command(label = 'Quit', command = lambda: exit_game(main_window))
 res_sub_menu = Menu(sub_menu)
@@ -329,4 +354,4 @@ res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
 
-game_run(main_menu,canvas,height,width,player,aim_line,enemy_box)
+game_run(main_menu,canvas,height,width)
