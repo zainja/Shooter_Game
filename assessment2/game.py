@@ -2,8 +2,8 @@ from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage
 import math
 import time
 import random
-width = 800
-height = 600
+width = 1200
+height = 900
 
 
 def change_binding():
@@ -15,7 +15,7 @@ def pause_game():
 
 
 def restart(mode):
-    global main_menu, canvas, height, width, player, aim_line, enemy_box,\
+    global main_window, canvas, height, width, enemy_box,\
             ball, list_of_boxes, grid, ball_movement, player_box, level, score
     if mode == 0:
         level = 1
@@ -28,7 +28,7 @@ def restart(mode):
     player_box = 0
     place_player
     canvas.delete("all")
-    game_run(main_menu, canvas, height, width)
+    game_run(main_window, canvas, height, width)
 
 
 def full_res():
@@ -37,7 +37,7 @@ def full_res():
     global height
     height = main_menu.winfo_screenheight()
     canvas.configure(width=width, height=height)
-    restart()
+    restart(0)
 
 
 def mid_res():
@@ -46,7 +46,7 @@ def mid_res():
     global height
     height = 1000
     canvas.configure(width=width, height=height)
-    restart()
+    restart(0)
 
 
 def small_res():
@@ -74,16 +74,17 @@ def player_lost():
     score = 0
     if level < 1:
         level = 1
-    messagebox.showinfo("LOST YA BASIC" , "YOU LOOOOOOOOSEEE")
+    messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
     restart(1)
+
+
 def ball_move():
-    global ball,ball_movement,width ,height, player, list_of_boxes,enemy
+    global ball, ball_movement, width, height, player, list_of_boxes, enemy
     if len(ball) == 3:
         canvas.unbind('<Button-1>')
-    while True :
-        for i in range (0, len(ball)):
-            i_coords = canvas.coords(ball[i])
-            
+    while True:
+        for i in range(0, len(ball)):
+            i_coords = canvas.coords(ball[i])      
             if i_coords[2] >= width:
                 ball_movement[i][0] = - ball_movement[i][0]
             if i_coords[0] <= 0:
@@ -92,9 +93,9 @@ def ball_move():
                 ball_movement[i][1] = - ball_movement[i][1]
             if i_coords[1] <= 0.1*height:
                 ball_movement[i][1] = - ball_movement[i][1]
-            if ball_hits_object(ball[i],player):
+            if ball_hits_object(ball[i], player):
                 player_lost()
-            if ball_hits_object(ball[i],enemy):
+            if ball_hits_object(ball[i], enemy):
                 player_won()
             if len(list_of_boxes) != 0:
                 for j in range(len(list_of_boxes)):
@@ -112,13 +113,18 @@ def ball_move():
                                 ball_movement[i][0] = - ball_movement[i][0]
                         elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
                                 ball_movement[i][0] = - ball_movement[i][0]              
-            canvas.move(ball[i], ball_movement[i][0],ball_movement[i][1])
+            canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
 
-def ball_hits_object(i,j):
+
+def ball_hits_object(i, j):
     i_coords = canvas.coords(i)
-    box_coords = canvas.coords(j)
+    box_coords = []
+    if j == player:
+        box_coords = player_hit_box()
+    else:
+        box_coords = canvas.coords(j)
     #check for right and left 
     if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
         #coming from left side
@@ -133,54 +139,80 @@ def ball_hits_object(i,j):
         elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
             return True
 
-    return False
+#     return False    
+def mouse_movement(event):
+    global player_direction, aim, player,current_player_img
     
-
-
-def mouse_movement (event):
-    global player_direction
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
-    rec_pos= canvas.coords(player)
+    rec_pos = player_hit_box()
     line_pos = canvas.coords(aim_line)
-    if (x<rec_pos[2]):
+    if (x < rec_pos[2]):
         line_pos[0] = rec_pos[0]
-        line_pos[2] = rec_pos[0]- 50
-        canvas.update()
-    if (x> rec_pos[2]):
+        line_pos[2] = rec_pos[0] - 50
+        canvas.itemconfig(player, image=aim_f[0])
+        current_player_img = aim_f[0]
+    if (x > rec_pos[2]):
         line_pos[0] = rec_pos[2]
         line_pos[2] = rec_pos[2] + 50
+        canvas.itemconfig(player, image=aim[0])
+        current_player_img = aim[0]
     i_component = x - line_pos[0]
     j_component = y - line_pos[1]
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    canvas.coords(aim_line,line_pos[0],line_pos[1],(unit_vector_i*50)+line_pos[0],(unit_vector_j*50)+line_pos[1])
+    canvas.coords(aim_line, line_pos[0], line_pos[1], (unit_vector_i*50) + line_pos[0], (unit_vector_j*50)+line_pos[1])
     canvas.update()
-        
+
+
 def shoot (event):
-    global ball
-    global aim_line
-    global ball_movement
+    global ball, aim_line, ball_movement, aim, player, current_player_img, shoot_anim, idle
     pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
     vector_length = math.sqrt(i_component**2 + j_component**2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
-    ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+10,pos_of_theline[3]+10,fill= "red"))
+    if current_player_img == aim[0]:
+        for i in range(1,len(aim)-1):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=aim[i])
+            current_player_img = aim[i]
+            canvas.update()
+        for i in range(0,len(shoot_anim)):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=shoot_anim[i])
+            current_player_img=shoot_anim[i]
+            canvas.update()
+    if current_player_img == aim_f[0]:
+        for i in range(1,len(aim_f)-1):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=aim_f[i],anchor = 'ne')
+            current_player_img = aim_f[i]
+            canvas.update()
+        for i in range(0,len(shoot_anim_f)):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=shoot_anim_f[i], anchor = 'ne')
+            current_player_img=shoot_anim_f[i]
+            canvas.update()
+        
+    canvas.itemconfig(player, image=idle,anchor = 'nw')
+    current_player_img= idle
+
+    ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+10,pos_of_theline[3]+10,fill="yellow"))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
     ball_move()
 
 
 
-def create_grid(height,width,total):
+def create_grid(height, width, total):
     main_height = height*0.9
     total_grid = []
     one_box = []
     x = 0
     y = height*0.1
-    width_of_box = width/ total
+    width_of_box = width / total
     height_of_box = main_height/total
     number_of_boxes = total**2
     for box in range (0,number_of_boxes):
@@ -197,42 +229,58 @@ def create_grid(height,width,total):
     return total_grid
 
 
-def place_player(grid,rec_size_x,rec_size_y):
-    global player_box,player,aim_line
-    player_box = random.randint(0,len(grid)-1)
+def player_hit_box():
+    global player, current_player_img
+    x2 = canvas.coords(player)[0] + current_player_img.width()
+    y2 = canvas.coords(player)[1] + current_player_img.height()
+    return [canvas.coords(player)[0], canvas.coords(player)[1], x2, y2]
+
+
+def enemy_hit_box():
+    global enemy, enemy_img
+    x2 = canvas.coords(enemy)[0] + enemy_img.width()
+    y2 = canvas.coords(enemy)[1] + enemy_img.height()
+    return [canvas.coords(enemy)[0],canvas.coords(enemy)[1], x2, y2]
+
+
+def place_player(grid):
+    global player_box, player, aim_line, idle,current_player_img
+    player_box = random.randint(0, len(grid)-1)
+    rec_size_x = current_player_img.width()
+    rec_size_y = current_player_img.height()
     # generate point to place the box
     # x coords
     point_x = random.uniform(grid[player_box][0],grid[player_box][2])
-    point_x2 =  point_x + rec_size_x 
+    point_x2 = point_x + rec_size_x
     while point_x2 >= grid[player_box][2]:
         point_x = random.uniform(grid[player_box][0],grid[player_box][2])
-        point_x2 =  point_x + rec_size_x 
-    # generate y coords 
-    point_y = random.uniform(grid[player_box][1],grid[player_box][3])
+        point_x2 = point_x + rec_size_x
+    # generate y coords
+    point_y = random.uniform(grid[player_box][1], grid[player_box][3])
     point_y2 = point_y + rec_size_y
     while point_y2 >= grid[player_box][3]:
-        point_y = random.uniform(grid[player_box][1],grid[player_box][3])
+        point_y = random.uniform(grid[player_box][1], grid[player_box][3])
         point_y2 = point_y + rec_size_y
+    player = canvas.create_image(point_x, point_y, anchor="nw", image=idle)
+    aim_line = canvas.create_line(0, width*0.1, height*0.1, 0)
+    rect_coords = player_hit_box()
+    mid_rect = (rect_coords[1]+rect_coords[3]) * 0.5
+    canvas.coords(aim_line, rect_coords[2], mid_rect,rect_coords[2] +50, mid_rect+50)
 
-    player = canvas.create_rectangle(point_x,point_y,point_x2,point_y2)
-    aim_line = canvas.create_line(0,width*0.1,height*0.1,0)
-    rect_coords = canvas.coords(player)
-    mid_rect = (rect_coords[1]+rect_coords[3])*0.5
-    canvas.coords(aim_line,rect_coords[2],mid_rect,rect_coords[2]+50,mid_rect+50)
 
-def place_enemy(grid,rec_size_x,rec_size_y,level):
-    global enemy_box,enemy, player_box
-    enemy_box = random.randint(0,len(grid)-1)
+def place_enemy(grid, rec_size_x, rec_size_y, level):
+    global enemy_box, enemy, player_box
+    enemy_box = random.randint(0, len(grid)-1)
     while enemy_box == player_box:
-        enemy_box = random.randint(0,len(grid)-1)
-    if level >=3 :
-        while check_placement(grid,enemy_box,player_box):
-            enemy_box = random.randint(0,len(grid))
+        enemy_box = random.randint(0, len(grid)-1)
+    if level >= 3:
+        while check_placement(grid, enemy_box, player_box):
+            enemy_box = random.randint(0, len(grid))
     point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
-    point_x2 =  point_x + rec_size_x 
+    point_x2 = point_x + rec_size_x
     while point_x2 >= grid[enemy_box][2]:
-        point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
-        point_x2 =  point_x + rec_size_x 
+        point_x = random.uniform(grid[enemy_box][0], grid[enemy_box][2])
+        point_x2 = point_x + rec_size_x
     # generate y coords 
     point_y = random.uniform(grid[enemy_box][1],grid[enemy_box][3])
     point_y2 = point_y + rec_size_y
@@ -241,7 +289,8 @@ def place_enemy(grid,rec_size_x,rec_size_y,level):
         point_y2 = point_y + rec_size_y    
     enemy = canvas.create_rectangle(point_x,point_y,point_x2,point_y2, fill = "green")  
 
-def check_placement(grid,enemy_box,player_box):
+
+def check_placement(grid, enemy_box, player_box):
     if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][3]:
@@ -274,11 +323,12 @@ def check_placement(grid,enemy_box,player_box):
         return True
     return False
 
+
 def generated_areas(list_of_grid):
-    global enemy_box,player_box
-    generated_boxes = [] 
+    global enemy_box, player_box
+    generated_boxes = []
     for i in range(len(list_of_grid)):
-        size_x =0 
+        size_x = 0 
         size_y = 0
         if i != player_box and i != enemy_box:
             x = list_of_grid[i][0]
@@ -301,13 +351,13 @@ def game_run(window, canvas,height,width):
     total = 0
     level_x_pos = width*0.1
     level_y_pos = (0.1*height)/3
-    scroe_x_pos = width*0.7
+    score_x_pos = width*0.7
     score_y_pos = level_y_pos
     level_txt = "level: " + str(level)
     score_txt = "score: " + str(score)
     bg_for_txt = canvas.create_rectangle(0,0,width,height*0.1,fill="red")
     level_label = canvas.create_text(level_x_pos,level_y_pos,font="Times 20 italic bold",text = level_txt ,anchor = "nw")
-    score_label = canvas.create_text(scroe_x_pos,score_y_pos,font="Times 20 italic bold",text = score_txt ,anchor = "nw")
+    score_label = canvas.create_text(score_x_pos,score_y_pos,font="Times 20 italic bold",text = score_txt ,anchor = "nw")
     if level == 1:
         total = 2
     if level == 2:
@@ -317,8 +367,10 @@ def game_run(window, canvas,height,width):
     if level >= 4:
         total = 5
     grid = create_grid(height,width,total)
-    place_player(grid,50,70,)
-    place_enemy(grid,50,70)
+    for i in grid:
+        canvas.create_rectangle(i)
+    place_player(grid)
+    place_enemy(grid,50,70,level)
     list_of_boxes = generated_areas(grid)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
@@ -339,6 +391,38 @@ player_box = 0
 enemy_box = 0 
 canvas = Canvas(main_window, width = width, height=height)
 level = 1
+enemy_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//enemy//enemy.png")
+aim = []
+aim_f = []
+shoot_anim = []
+shoot_anim_f = []
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_01.png"))
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_02.png"))
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_03.png"))
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_04.png"))
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_05.png"))
+aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_06.png"))
+shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_01.png"))
+shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_02.png"))
+shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_03.png"))
+shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_04.png"))
+shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_05.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_01F.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_02F.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_03F.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_04F.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_05F.png"))
+aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_06F.png"))
+shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_01F.png"))
+shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_02F.png"))
+shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_03F.png"))
+shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_04F.png"))
+shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_05F.png"))
+idle = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Idle//idle.gif")
+
+
+
+current_player_img = idle
 score = 0
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
