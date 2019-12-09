@@ -18,7 +18,7 @@ def restart(mode):
     global main_window, canvas, height, width, enemy_box,\
             ball, list_of_boxes, grid, ball_movement, player_box, level, score
     if mode == 0:
-        level = 1
+        #level = 1
         score = 0
     ball = []
     list_of_boxes = []
@@ -123,8 +123,8 @@ def ball_hits_object(i, j):
     box_coords = []
     if j == player:
         box_coords = player_hit_box()
-    else:
-        box_coords = canvas.coords(j)
+    if j == enemy:
+        box_coords = enemy_hit_box()
     #check for right and left 
     if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
         #coming from left side
@@ -183,7 +183,7 @@ def shoot (event):
         for i in range(0,len(shoot_anim)):
             time.sleep(0.1)
             canvas.itemconfig(player, image=shoot_anim[i])
-            current_player_img=shoot_anim[i]
+            current_player_img = shoot_anim[i]
             canvas.update()
     if current_player_img == aim_f[0]:
         for i in range(1,len(aim_f)-1):
@@ -268,14 +268,17 @@ def place_player(grid):
     canvas.coords(aim_line, rect_coords[2], mid_rect,rect_coords[2] +50, mid_rect+50)
 
 
-def place_enemy(grid, rec_size_x, rec_size_y, level):
-    global enemy_box, enemy, player_box
-    enemy_box = random.randint(0, len(grid)-1)
+def place_enemy(grid, level):
+    global enemy_box, enemy, player_box, enemy_img
+    rec_size_x = enemy_img.width()
+    rec_size_y = enemy_img.height()
+    enemy_box = player_box
     while enemy_box == player_box:
         enemy_box = random.randint(0, len(grid)-1)
+    print(grid[enemy_box])
     if level >= 3:
         while check_placement(grid, enemy_box, player_box):
-            enemy_box = random.randint(0, len(grid))
+            enemy_box = random.randint(0, len(grid)-1)
     point_x = random.uniform(grid[enemy_box][0],grid[enemy_box][2])
     point_x2 = point_x + rec_size_x
     while point_x2 >= grid[enemy_box][2]:
@@ -287,10 +290,11 @@ def place_enemy(grid, rec_size_x, rec_size_y, level):
     while point_y2 >= grid[enemy_box][3]:
         point_y = random.uniform(grid[enemy_box][1],grid[enemy_box][3])
         point_y2 = point_y + rec_size_y    
-    enemy = canvas.create_rectangle(point_x,point_y,point_x2,point_y2, fill = "green")  
+    enemy = canvas.create_image(point_x,point_y, anchor="nw", image = enemy_img)  
 
 
 def check_placement(grid, enemy_box, player_box):
+    print("enemy",str(enemy_box) , "player" , str(player_box))
     if grid[enemy_box][0] == grid[player_box][2] and grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][0] and grid[enemy_box][1] == grid[player_box][3]:
@@ -370,7 +374,7 @@ def game_run(window, canvas,height,width):
     for i in grid:
         canvas.create_rectangle(i)
     place_player(grid)
-    place_enemy(grid,50,70,level)
+    place_enemy(grid,level)
     list_of_boxes = generated_areas(grid)
     canvas.bind('<Motion>',mouse_movement)
     canvas.bind('<Button-1>',shoot)
