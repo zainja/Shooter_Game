@@ -18,7 +18,7 @@ def restart(mode):
     global main_window, canvas, height, width, enemy_box,\
             ball, list_of_boxes, grid, ball_movement, player_box, level, score
     if mode == 0:
-        #level = 1
+        level = 1
         score = 0
     ball = []
     list_of_boxes = []
@@ -33,9 +33,10 @@ def restart(mode):
 
 def full_res():
     global width
-    width = main_menu.winfo_screenwidth()
+    width = int(main_window.winfo_screenwidth())
     global height
-    height = main_menu.winfo_screenheight()
+    height = int(main_window.winfo_screenheight()*0.92)
+    main_window.geometry(str(width)+"x"+str(height))
     canvas.configure(width=width, height=height)
     restart(0)
 
@@ -45,6 +46,7 @@ def mid_res():
     width = 1200
     global height
     height = 1000
+    main_window.geometry(str(width)+"x"+str(height))
     canvas.configure(width=width, height=height)
     restart(0)
 
@@ -116,7 +118,6 @@ def ball_move():
             canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
-
 
 def ball_hits_object(i, j):
     i_coords = canvas.coords(i)
