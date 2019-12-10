@@ -1,9 +1,27 @@
-from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage
+from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button
 import math
 import time
 import random
 width = 1200
 height = 900
+
+
+def btn_switch(mode):
+    global main_window, canvas, height, width, list_of_btns
+    for l in list_of_btns:
+        l.destroy()
+    if mode == 0:
+        game_run(main_window, canvas, height, width)
+    if mode == 1:
+        load_game()
+    if mode == 2:
+        leaderboard()
+    if mode == 3:
+        pass
+    if mode == 4:
+        change_binding()
+    if mode == 5:
+        main_window.destroy()
 
 
 def change_binding():
@@ -12,6 +30,14 @@ def change_binding():
 
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
+
+
+def load_game():
+    pass
+
+
+def leaderboard():
+    pass
 
 
 def restart(mode):
@@ -31,9 +57,14 @@ def restart(mode):
     game_run(main_window, canvas, height, width)
 
 
+def exit_game(main_window):
+    if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
+        main_window.destroy()
+
+
 def full_res():
     global width
-    width = int(main_window.winfo_screenwidth())
+    width = int(main_window.winfo_screenwidth()*0.97)
     global height
     height = int(main_window.winfo_screenheight()*0.92)
     main_window.geometry(str(width)+"x"+str(height))
@@ -60,9 +91,6 @@ def small_res():
     restart()
 
 
-def exit_game(main_window):
-    if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
-        main_window.destroy()
 
 def player_won():
     global level, score
@@ -70,6 +98,8 @@ def player_won():
     score += 100
     messagebox.showinfo("Game WON", "CONGRATS")
     restart(1)
+
+    
 def player_lost():
     global level, score
     level -=1
@@ -102,19 +132,18 @@ def ball_move():
             if len(list_of_boxes) != 0:
                 for j in range(len(list_of_boxes)):
                     box_coords = canvas.coords(list_of_boxes[j])
-                    #i_coords = canvas.coords(ball[i])
                     if (i_coords[0] > box_coords[0] and i_coords[0] < box_coords[2]) or (i_coords[2] > box_coords[0] and i_coords[2] < box_coords[2]):
                         #coming from left side
                         if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
-                                ball_movement[i][1] = - ball_movement[i][1]
+                            ball_movement[i][1] = - ball_movement[i][1]
                         elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
-                                ball_movement[i][1] = - ball_movement[i][1]
+                            ball_movement[i][1] = - ball_movement[i][1]
 
                     if (i_coords[1] > box_coords[1] and i_coords[1] < box_coords[3]) or (i_coords[3] > box_coords[1] and i_coords[3] < box_coords[3]):
                         if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
-                                ball_movement[i][0] = - ball_movement[i][0]
+                            ball_movement[i][0] = - ball_movement[i][0]
                         elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
-                                ball_movement[i][0] = - ball_movement[i][0]              
+                            ball_movement[i][0] = - ball_movement[i][0]
             canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
@@ -139,8 +168,9 @@ def ball_hits_object(i, j):
             return True
         elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
             return True
+    return False
 
-#     return False    
+
 def mouse_movement(event):
     global player_direction, aim, player,current_player_img
     
@@ -381,6 +411,29 @@ def game_run(window, canvas,height,width):
     canvas.bind('<Button-1>',shoot)
     canvas.pack()
     window.mainloop()  
+def entry_menu():
+    global main_window,height,width,canvas,height,width, list_of_btns
+    btn_width = int(width*0.6)
+    btn_height= int(height*0.1)
+    play_btn = Button(main_window,width=btn_width,height=btn_height,image=play_btn_img,command=lambda : btn_switch(0))
+    play_btn.place(x=width*0.03, y=height*0.1)
+    load_game_btn = Button(main_window,width=btn_width,height=btn_height,image=load_btn_img,command=lambda : btn_switch(1))
+    load_game_btn.place(x=width*0.03, y=height*0.25)
+    leaderboard_btn = Button(main_window,width=btn_width,height=btn_height,image=leaderboard_btn_img,command=lambda : btn_switch(2))
+    leaderboard_btn.place(x=width*0.03, y=height*0.4)
+    resoloution_btn = Button(main_window,width=btn_width,height=btn_height,image=resolution_btn_img,command=lambda : btn_switch(3))
+    resoloution_btn.place(x=width*0.03, y=height*0.55)
+    change_keys_btn = Button(main_window,width=btn_width,height=btn_height,image= change_keys_btn_img,command=lambda : btn_switch(4))
+    change_keys_btn.place(x=width*0.03, y=height*0.70)
+    quit_key_btn = Button(main_window,width=btn_width,height=btn_height,image= quit_key_btn_img,command=lambda : btn_switch(5))
+    quit_key_btn.place(x=width*0.03, y=height*0.85)
+    list_of_btns.append(play_btn)
+    list_of_btns.append(load_game_btn)
+    list_of_btns.append(leaderboard_btn)
+    list_of_btns.append(resoloution_btn)
+    list_of_btns.append(change_keys_btn)
+    list_of_btns.append(quit_key_btn)
+
 
 ### var decleration ###
 main_window = Tk()
@@ -425,8 +478,13 @@ shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019
 shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_05F.png"))
 idle = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Idle//idle.gif")
 
-
-
+play_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//play_btn.png")
+load_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//load_btn.png")
+leaderboard_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//leaderboard_btn.png")
+resolution_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//resolution_btn.png")
+change_keys_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//change_keys_btn.png")
+quit_key_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//quit_btn.png")
+list_of_btns = []
 current_player_img = idle
 score = 0
 main_menu = Menu(main_window)
@@ -442,5 +500,6 @@ res_sub_menu.add_command(label ="full screen", command = full_res)
 res_sub_menu.add_command(label ="1200 x 1000", command = mid_res)
 res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
-
-game_run(main_menu,canvas,height,width)
+entry_menu()
+main_window.mainloop()
+#game_run(main_menu,canvas,height,width)
