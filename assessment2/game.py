@@ -1,10 +1,24 @@
-from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button, Label
+from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button, Label, Entry
 import math
 import time
 import random
-width = 1200
-height = 900
+import re
 
+player_settings = {
+    'player_name': None,
+    'level': 1,
+    'score': 0,
+    'lives': 5,
+    'key': '<Button-1>',
+    'screen_height': 900,
+    'screen_width': 1200
+}
+width = player_settings['screen_width']
+height = player_settings['screen_height']
+
+
+def update_dictonary():
+    pass
 
 def btn_switch(mode):
     global main_window, canvas, height, width, list_of_btns
@@ -24,6 +38,22 @@ def btn_switch(mode):
         main_window.destroy()
     if mode == 6:
         entry_menu()
+    if mode == 7:
+        enter_name()
+def enter_name():
+    global main_window, width, list_of_btns
+    label_enter_name = Label(main_window, text="Enter a Name", font = ('Times new roman', 25))
+    label_enter_name.place(relx=0.1, rely=0.5)
+    entry_name = Entry(main_window, width=int(width*0.06))
+    entry_name.place(relx=0.1, rely=0.6)
+    confirm_btn = Button(text='start', command=lambda: btn_switch(0))
+    confirm_btn.place(relx=0.1, rely=0.7)
+    list_of_btns.append(label_enter_name)
+    list_of_btns.append(entry_name)
+    list_of_btns.append(confirm_btn)
+
+
+
 
 
 def resolution_change():
@@ -46,17 +76,20 @@ def resolution_change():
 
 def change_binding():
     global main_window, list_of_btns
-    label_info_bind = Label(main_window, text ="Press any key to change it to the shooting key",font=("Times new roman", 25))
-    label_info_bind.place(x=width*0.03, y=height/3)
+    label_info_bind = Label(main_window, text ="Press any key to change it to the shooting key", font=("Times new roman", 25))
+    label_info_bind.place(relx = 0.1, rely=0.5)
     list_of_btns.append(label_info_bind)
     main_window.bind('<Key>', bind_new_key)
+
 
 def bind_new_key(event):
     global shoot_key, main_window, list_of_btns
     shoot_key = '<'+event.keysym + '>'
     info_key = "key choosen was " + shoot_key
+    main_window.unbind('<Key>')
     messagebox.showinfo("Key changes!", info_key)
     btn_switch(6)
+
 
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
@@ -128,10 +161,14 @@ def player_won():
 
 
 def player_lost():
-    global level, score
+    global level, score, lives
     level -=1
-    score = 0
+    score -= 150
+    if score < 0 :
+        score = 0
     if level < 1:
+        level = 1
+    if lives == 0:
         level = 1
     messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
     restart(1)
@@ -190,7 +227,7 @@ def ball_hits_object(i, j):
         elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
             return True
     if (i_coords[0] >= box_coords[0] and i_coords[0] <= box_coords[2]) or (i_coords[2] >= box_coords[0] and i_coords[2] <= box_coords[2]):
-        #coming from left side
+        # coming from left side
         if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
             return True
         elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
@@ -199,8 +236,7 @@ def ball_hits_object(i, j):
 
 
 def mouse_movement(event):
-    global player_direction, aim, player,current_player_img
-    
+    global player_direction, aim, player, current_player_img
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos = player_hit_box()
@@ -224,7 +260,7 @@ def mouse_movement(event):
     canvas.update()
 
 
-def shoot (event):
+def shoot(event):
     global ball, aim_line, ball_movement, aim, player, current_player_img, shoot_anim, idle
     pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
@@ -252,11 +288,10 @@ def shoot (event):
         for i in range(0,len(shoot_anim_f)):
             time.sleep(0.1)
             canvas.itemconfig(player, image=shoot_anim_f[i], anchor = 'ne')
-            current_player_img=shoot_anim_f[i]
+            current_player_img = shoot_anim_f[i]
             canvas.update()
-        
-    canvas.itemconfig(player, image=idle,anchor = 'nw')
-    current_player_img= idle
+    canvas.itemconfig(player, image=idle, anchor='nw')
+    current_player_img = idle
 
     ball.append(canvas.create_oval(pos_of_theline[2],pos_of_theline[3],pos_of_theline[2]+10,pos_of_theline[3]+10,fill="yellow"))
     ball_movement.append([unit_vector_i*2,unit_vector_j*2])
@@ -407,8 +442,6 @@ def generated_areas(list_of_grid):
             generated_boxes.append(canvas.create_rectangle(rand_x, rand_y, rand_x+size_x ,rand_y+size_y, fill="red"))
     return generated_boxes
 
-def print_sth(event):
-    print("ehhehehe")
 
 def game_run(window, canvas,height,width):
     global list_of_boxes, shoot_key
@@ -446,7 +479,7 @@ def entry_menu():
     global main_window,height,width,canvas,height,width, list_of_btns
     btn_width = int(width*0.6)
     btn_height= int(height*0.1)
-    play_btn = Button(main_window,width=btn_width,height=btn_height,image=play_btn_img,command=lambda : btn_switch(0))
+    play_btn = Button(main_window,width=btn_width,height=btn_height,image=play_btn_img,command=lambda : btn_switch(7))
     play_btn.place(x=width*0.03, y=height*0.1)
     load_game_btn = Button(main_window,width=btn_width,height=btn_height,image=load_btn_img,command=lambda : btn_switch(1))
     load_game_btn.place(x=width*0.03, y=height*0.25)
@@ -469,6 +502,8 @@ def entry_menu():
 ### var decleration ###
 main_window = Tk()
 main_window.geometry(str(width)+"x"+str(height))
+main_window.resizable(0, 0)
+main_window.wm_attributes("-topmost", 1)
 grid = []
 ball = []
 list_of_boxes = []
@@ -479,46 +514,48 @@ enemy = None
 player_box = 0
 enemy_box = 0 
 canvas = Canvas(main_window, width = width, height=height)
-level = 1
-enemy_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//enemy//enemy.png")
+level = player_settings['level']
+enemy_img = PhotoImage(file=".//enemy//enemy.png")
 aim = []
 aim_f = []
 shoot_anim = []
 shoot_anim_f = []
-shoot_key = '<Button-1>'
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_01.png"))
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_02.png"))
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_03.png"))
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_04.png"))
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_05.png"))
-aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_06.png"))
-shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_01.png"))
-shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_02.png"))
-shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_03.png"))
-shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_04.png"))
-shoot_anim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_05.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_01F.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_02F.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_03F.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_04F.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_05F.png"))
-aim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_06F.png"))
-shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_01F.png"))
-shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_02F.png"))
-shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_03F.png"))
-shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_04F.png"))
-shoot_anim_f.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Shoot//Shoot_05F.png"))
-idle = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Idle//idle.gif")
+shoot_key = player_settings['key']
+score = player_settings['score']
+lives = player_settings['lives']
 
-play_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//play_btn.png")
-load_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//load_btn.png")
-leaderboard_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//leaderboard_btn.png")
-resolution_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//resolution_btn.png")
-change_keys_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//change_keys_btn.png")
-quit_key_btn_img = PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2/btns//quit_btn.png")
+aim.append(PhotoImage(file=".//Aim//Aim_01.png"))
+aim.append(PhotoImage(file=".//Aim//Aim_02.png"))
+aim.append(PhotoImage(file=".//Aim//Aim_03.png"))
+aim.append(PhotoImage(file=".//Aim//Aim_04.png"))
+aim.append(PhotoImage(file=".//Aim//Aim_05.png"))
+aim.append(PhotoImage(file=".//Aim//Aim_06.png"))
+shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_01.png"))
+shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_02.png"))
+shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_03.png"))
+shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_04.png"))
+shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_05.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_01F.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_02F.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_03F.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_04F.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_05F.png"))
+aim_f.append(PhotoImage(file=".//Aim//Aim_06F.png"))
+shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_01F.png"))
+shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_02F.png"))
+shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_03F.png"))
+shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_04F.png"))
+shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_05F.png"))
+idle = PhotoImage(file=".//Idle//idle.gif")
+
+play_btn_img = PhotoImage(file="./btns//play_btn.png")
+load_btn_img = PhotoImage(file="./btns//load_btn.png")
+leaderboard_btn_img = PhotoImage(file="./btns//leaderboard_btn.png")
+resolution_btn_img = PhotoImage(file="./btns//resolution_btn.png")
+change_keys_btn_img = PhotoImage(file="./btns//change_keys_btn.png")
+quit_key_btn_img = PhotoImage(file="./btns//quit_btn.png")
 list_of_btns = []
 current_player_img = idle
-score = 0
 main_menu = Menu(main_window)
 main_window.configure(menu = main_menu)
 sub_menu = Menu(main_menu)
@@ -534,4 +571,3 @@ res_sub_menu.add_command(label ="400 x 300", command = small_res)
 sub_menu.add_command(label = 'change keys', command = change_binding)
 entry_menu()
 main_window.mainloop()
-#game_run(main_menu,canvas,height,width)
