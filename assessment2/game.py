@@ -1,4 +1,4 @@
-from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button
+from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button, Label
 import math
 import time
 import random
@@ -17,11 +17,13 @@ def btn_switch(mode):
     if mode == 2:
         leaderboard()
     if mode == 3:
-        pass
+        resolution_change()
     if mode == 4:
         change_binding()
     if mode == 5:
         main_window.destroy()
+    if mode == 6:
+        entry_menu()
 
 
 def resolution_change():
@@ -43,8 +45,18 @@ def resolution_change():
 
 
 def change_binding():
-    pass
+    global main_window, list_of_btns
+    label_info_bind = Label(main_window, text ="Press any key to change it to the shooting key",font=("Times new roman", 25))
+    label_info_bind.place(x=width*0.03, y=height/3)
+    list_of_btns.append(label_info_bind)
+    main_window.bind('<Key>', bind_new_key)
 
+def bind_new_key(event):
+    global shoot_key, main_window, list_of_btns
+    shoot_key = '<'+event.keysym + '>'
+    info_key = "key choosen was " + shoot_key
+    messagebox.showinfo("Key changes!", info_key)
+    btn_switch(6)
 
 def pause_game():
     messagebox.showinfo("Pause", "Game paused")
@@ -87,8 +99,6 @@ def full_res():
     height = int(main_window.winfo_screenheight()*0.92)
     main_window.geometry(str(width)+"x"+str(height))
     canvas.configure(width=width, height=height)
-    restart(0)
-
 
 def mid_res():
     global width
@@ -97,16 +107,15 @@ def mid_res():
     height = 1000
     main_window.geometry(str(width)+"x"+str(height))
     canvas.configure(width=width, height=height)
-    restart(0)
 
 
 def small_res():
     global width
-    width = 400
+    width = 600
     global height
-    height = 300
+    height = 800
+    main_window.geometry(str(width)+"x"+str(height))
     canvas.configure(width=width, height=height)
-    restart()
 
 
 
@@ -117,7 +126,7 @@ def player_won():
     messagebox.showinfo("Game WON", "CONGRATS")
     restart(1)
 
-    
+
 def player_lost():
     global level, score
     level -=1
@@ -314,7 +323,7 @@ def place_player(grid):
     aim_line = canvas.create_line(0, width*0.1, height*0.1, 0)
     rect_coords = player_hit_box()
     mid_rect = (rect_coords[1]+rect_coords[3]) * 0.5
-    canvas.coords(aim_line, rect_coords[2], mid_rect,rect_coords[2] +50, mid_rect+50)
+    canvas.coords(aim_line, rect_coords[2], mid_rect, rect_coords[2] + 50, mid_rect+50)
 
 
 def place_enemy(grid, level):
@@ -396,11 +405,13 @@ def generated_areas(list_of_grid):
                 size_x = random.uniform(0, x1 -rand_x)
                 size_y = random.uniform(0,y1-rand_y)
             generated_boxes.append(canvas.create_rectangle(rand_x, rand_y, rand_x+size_x ,rand_y+size_y, fill="red"))
-    return generated_boxes  
+    return generated_boxes
 
+def print_sth(event):
+    print("ehhehehe")
 
 def game_run(window, canvas,height,width):
-    global list_of_boxes
+    global list_of_boxes, shoot_key
     total = 0
     level_x_pos = width*0.1
     level_y_pos = (0.1*height)/3
@@ -425,10 +436,12 @@ def game_run(window, canvas,height,width):
     place_player(grid)
     place_enemy(grid,level)
     list_of_boxes = generated_areas(grid)
-    canvas.bind('<Motion>',mouse_movement)
-    canvas.bind('<Button-1>',shoot)
+    main_window.bind('<Motion>',mouse_movement)
+    main_window.bind(shoot_key,shoot)
     canvas.pack()
-    window.mainloop()  
+    window.mainloop()
+
+
 def entry_menu():
     global main_window,height,width,canvas,height,width, list_of_btns
     btn_width = int(width*0.6)
@@ -472,6 +485,7 @@ aim = []
 aim_f = []
 shoot_anim = []
 shoot_anim_f = []
+shoot_key = '<Button-1>'
 aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_01.png"))
 aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_02.png"))
 aim.append(PhotoImage(file="//home//zainalden//Repos//Coursework_r60019zj//assessment2//Aim//Aim_03.png"))
