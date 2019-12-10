@@ -17,7 +17,22 @@ width = player_settings['screen_width']
 height = player_settings['screen_height']
 
 
-def update_dictonary():
+def update_dictonary(mode,var_to_update):
+    global player_settings
+    if mode == 0:
+        player_settings['player_name'] = var_to_update
+    elif mode == 1:
+        player_settings['level'] = var_to_update
+    elif mode == 2:
+        player_settings['score'] = var_to_update
+    elif mode == 3:
+        player_settings['lives'] = var_to_update
+    elif mode == 4: 
+        player_settings['key'] = var_to_update
+    elif mode == 5:
+        player_settings['screen_height'] = var_to_update
+    elif mode == 6:
+        player_settings['screen_width'] = var_to_update
     pass
 
 def btn_switch(mode):
@@ -85,7 +100,8 @@ def change_binding():
 def bind_new_key(event):
     global shoot_key, main_window, list_of_btns
     shoot_key = '<'+event.keysym + '>'
-    info_key = "key choosen was " + shoot_key
+
+    info_key = "key choosen was " + event.keysym
     main_window.unbind('<Key>')
     messagebox.showinfo("Key changes!", info_key)
     btn_switch(6)
@@ -175,9 +191,9 @@ def player_lost():
 
 
 def ball_move():
-    global ball, ball_movement, width, height, player, list_of_boxes, enemy
-    if len(ball) == 3:
-        canvas.unbind('<Button-1>')
+    global ball, ball_movement, width, height, player, list_of_boxes, enemy,shoot_key
+    if len(ball) >= 3:
+        main_window.unbind(shoot_key)
     while True:
         for i in range(0, len(ball)):
             i_coords = canvas.coords(ball[i])      
@@ -261,7 +277,7 @@ def mouse_movement(event):
 
 
 def shoot(event):
-    global ball, aim_line, ball_movement, aim, player, current_player_img, shoot_anim, idle
+    global ball, aim_line, ball_movement, aim, player, current_player_img, shoot_anim, idle, shoot_key
     pos_of_theline = canvas.coords(aim_line)
     i_component = pos_of_theline[2] - pos_of_theline[0]
     j_component = pos_of_theline[3] - pos_of_theline[1]
