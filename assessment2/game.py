@@ -24,6 +24,24 @@ def btn_switch(mode):
         main_window.destroy()
 
 
+def resolution_change():
+    global width, height,main_window, list_of_btns
+    btn_width = int(width*0.6)
+    btn_height = int(height*0.1)
+    full_screen_btn = Button(main_window, width=btn_width, height=btn_height, image=play_btn_img, command=lambda :full_res())
+    full_screen_btn.place(x=width*0.03, y=height*0.1)
+    mid_res_btn = Button(main_window,width=btn_width,height=btn_height,image=load_btn_img,command=lambda : mid_res())
+    mid_res_btn.place(x=width*0.03, y=height*0.25)
+    small_res_btn = Button(main_window,width=btn_width,height=btn_height,image=leaderboard_btn_img,command=lambda : small_res())
+    small_res_btn.place(x=width*0.03, y=height*0.4)
+    back_btn = Button(main_window,width=btn_width,height=btn_height,image=resolution_btn_img,command=lambda : btn_switch(6))
+    back_btn.place(x=width*0.03, y=height*0.55)
+    list_of_btns.append(full_screen_btn)
+    list_of_btns.append(mid_res_btn)
+    list_of_btns.append(small_res_btn)
+    list_of_btns.append(back_btn)
+
+
 def change_binding():
     pass
 
