@@ -43,7 +43,7 @@ def update_dictionary(mode, var_to_update):
 
 
 def btn_switch(mode):
-    global main_window, canvas, height, width, list_of_btns, canvas
+    global main_window, canvas, height, width, list_of_btns, canvas, pause
     canvas.delete('all')
     for items in list_of_btns:
         items.destroy()
@@ -58,6 +58,7 @@ def btn_switch(mode):
     if mode == 4:
         change_binding()
     if mode == 5:
+        pause = True
         empty_game_lists()
         main_window.destroy()
     if mode == 6:
@@ -117,7 +118,8 @@ def resolution_change():
 
 def change_binding():
     global main_window, list_of_btns
-    label_info_bind = Label(main_window, text="Press any key to change it to the shooting key",
+    label_info_bind = Label(main_window,
+                            text="Press any key to change it to the shooting key",
                             font=("Times new roman", 25))
     label_info_bind.place(relx=0.1, rely=0.5)
     list_of_btns.append(label_info_bind)
@@ -230,14 +232,15 @@ def leaderboard_write():
         if len(player_name) > 10:
             player_name = player_name[0:10]
         required_stars = total_char_count - (len(score) + len(player_name))
-        string_single_entry = player_name + ("-" * required_stars) + score + "\n"
+        string_single_entry = player_name + (
+                    "-" * required_stars) + score + "\n"
         leaderboard.write(string_single_entry)
         leaderboard.close()
 
 
 def empty_game_lists():
     global ball, list_of_boxes, grid, ball_movement, player_box, \
-            enemy_box
+        enemy_box
     ball = []
     list_of_boxes = []
     grid = []
@@ -249,7 +252,7 @@ def empty_game_lists():
 
 def restart(mode):
     global main_window, canvas, height, width, lives, \
-           level, score
+        level, score
     if mode == 0:
         level = 1
         update_dictionary(1, level)
@@ -260,11 +263,6 @@ def restart(mode):
 
     empty_game_lists()
     game_run(main_window, canvas, height, width)
-
-
-def exit_game(window):
-    if messagebox.askokcancel("Quit", "Do you really wish to quit?"):
-        window.destroy()
 
 
 def full_res():
@@ -311,7 +309,8 @@ def player_won():
 
 
 def player_lost():
-    global level, score, lives, halt, main_window, shoot_key
+    global level, score, lives, halt, main_window, shoot_key, \
+        player_session_end
     level -= 1
     lives -= 1
     if level < 1:
@@ -319,13 +318,9 @@ def player_lost():
     update_dictionary(1, level)
     update_dictionary(3, lives)
     if lives == 0:
+        player_session_end = True
         halt = True
-        main_window.unbind(shoot_key)
-        main_window.unbind('<Motion>')
-        empty_game_lists()
-        messagebox.showinfo("Game lost", "You have no lives left")
-        leaderboard_write()
-        btn_switch(2)
+        restart(1)
     else:
         messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
         restart(1)
@@ -333,7 +328,7 @@ def player_lost():
 
 def mouse_movement(event):
     global aim, player, current_player_img, pause, canvas, shoot_key, \
-                counter_bind
+        counter_bind
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos = player_hit_box()
@@ -361,45 +356,46 @@ def mouse_movement(event):
 
 def shoot(event):
     global ball, aim_line, ball_movement, aim, player, current_player_img, \
-        shoot_anim, idle, shoot_key
-    pos_of_the_line = canvas.coords(aim_line)
-    i_component = pos_of_the_line[2] - pos_of_the_line[0]
-    j_component = pos_of_the_line[3] - pos_of_the_line[1]
-    vector_length = math.sqrt(i_component ** 2 + j_component ** 2)
-    unit_vector_i = i_component / vector_length
-    unit_vector_j = j_component / vector_length
-    if current_player_img == aim[0]:
-        for i in range(1, len(aim) - 1):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=aim[i])
-            current_player_img = aim[i]
-            canvas.update()
-        for i in range(0, len(shoot_anim)):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=shoot_anim[i])
-            current_player_img = shoot_anim[i]
-            canvas.update()
-    if current_player_img == aim_f[0]:
-        for i in range(1, len(aim_f) - 1):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=aim_f[i], anchor='ne')
-            current_player_img = aim_f[i]
-            canvas.update()
-        for i in range(0, len(shoot_anim_f)):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
-            current_player_img = shoot_anim_f[i]
-            canvas.update()
-    canvas.itemconfig(player, image=idle, anchor='nw')
-    current_player_img = idle
+        shoot_anim, idle, shoot_key, halt
+    if not halt:
+        pos_of_the_line = canvas.coords(aim_line)
+        i_component = pos_of_the_line[2] - pos_of_the_line[0]
+        j_component = pos_of_the_line[3] - pos_of_the_line[1]
+        vector_length = math.sqrt(i_component ** 2 + j_component ** 2)
+        unit_vector_i = i_component / vector_length
+        unit_vector_j = j_component / vector_length
+        if current_player_img == aim[0]:
+            for i in range(1, len(aim) - 1):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=aim[i])
+                current_player_img = aim[i]
+                canvas.update()
+            for i in range(0, len(shoot_anim)):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=shoot_anim[i])
+                current_player_img = shoot_anim[i]
+                canvas.update()
+        if current_player_img == aim_f[0]:
+            for i in range(1, len(aim_f) - 1):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=aim_f[i], anchor='ne')
+                current_player_img = aim_f[i]
+                canvas.update()
+            for i in range(0, len(shoot_anim_f)):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
+                current_player_img = shoot_anim_f[i]
+                canvas.update()
+        canvas.itemconfig(player, image=idle, anchor='nw')
+        current_player_img = idle
 
-    ball.append(
-        canvas.create_oval(pos_of_the_line[2], pos_of_the_line[3],
-                           pos_of_the_line[2] + 10,
-                           pos_of_the_line[3] + 10,
-                           fill="yellow"))
-    ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
-    ball_move()
+        ball.append(
+            canvas.create_oval(pos_of_the_line[2], pos_of_the_line[3],
+                               pos_of_the_line[2] + 10,
+                               pos_of_the_line[3] + 10,
+                               fill="yellow"))
+        ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
+        ball_move()
 
 
 def ball_move():
@@ -427,19 +423,27 @@ def ball_move():
             if len(list_of_boxes) != 0:
                 for j in range(len(list_of_boxes)):
                     box_coords = canvas.coords(list_of_boxes[j])
-                    if (i_coords[0] > box_coords[0] and i_coords[0] < box_coords[2]) or (
-                            i_coords[2] > box_coords[0] and i_coords[2] < box_coords[2]):
+                    if (i_coords[0] > box_coords[0] and i_coords[0] <
+                        box_coords[2]) or (
+                            i_coords[2] > box_coords[0] and i_coords[2] <
+                            box_coords[2]):
                         # coming from left side
-                        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
+                        if (i_coords[1] <= box_coords[3]) and (
+                                i_coords[3] >= box_coords[3]):
                             ball_movement[i][1] = - ball_movement[i][1]
-                        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
+                        elif (i_coords[3] >= box_coords[1]) and (
+                                i_coords[1] <= box_coords[1]):
                             ball_movement[i][1] = - ball_movement[i][1]
 
-                    if (i_coords[1] > box_coords[1] and i_coords[1] < box_coords[3]) or (
-                            i_coords[3] > box_coords[1] and i_coords[3] < box_coords[3]):
-                        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
+                    if (i_coords[1] > box_coords[1] and i_coords[1] <
+                        box_coords[3]) or (
+                            i_coords[3] > box_coords[1] and i_coords[3] <
+                            box_coords[3]):
+                        if (i_coords[0] <= box_coords[2]) and (
+                                i_coords[2] >= box_coords[2]):
                             ball_movement[i][0] = - ball_movement[i][0]
-                        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
+                        elif (i_coords[2] >= box_coords[0]) and (
+                                i_coords[0] <= box_coords[0]):
                             ball_movement[i][0] = - ball_movement[i][0]
             canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
         canvas.update()
@@ -531,7 +535,8 @@ def place_player(grid):
     aim_line = canvas.create_line(0, width * 0.1, height * 0.1, 0)
     rect_coords = player_hit_box()
     mid_rect = (rect_coords[1] + rect_coords[3]) * 0.5
-    canvas.coords(aim_line, rect_coords[2], mid_rect, rect_coords[2] + 50, mid_rect + 50)
+    canvas.coords(aim_line, rect_coords[2], mid_rect, rect_coords[2] + 50,
+                  mid_rect + 50)
 
 
 def place_enemy(grid, level):
@@ -625,12 +630,20 @@ def generated_areas(list_of_grid):
                 size_x = random.uniform(0, x1 - rand_x)
                 size_y = random.uniform(0, y1 - rand_y)
             generated_boxes.append(
-                canvas.create_rectangle(rand_x, rand_y, rand_x + size_x, rand_y + size_y, fill="red"))
+                canvas.create_rectangle(rand_x, rand_y, rand_x + size_x,
+                                        rand_y + size_y, fill="red"))
     return generated_boxes
 
 
 def game_run(window, canvas, height, width):
-    global list_of_boxes, shoot_key, pause, pause_btn, halt
+    global list_of_boxes, shoot_key, pause, pause_btn, halt, player_session_end
+    if player_session_end and halt:
+        halt = True
+        main_window.unbind(shoot_key)
+        main_window.unbind('<Motion>')
+        messagebox.showinfo("Game lost", "You have no lives left")
+        leaderboard_write()
+        btn_switch(2)
     if not halt:
         total = 0
         level_x_pos = int(width * 0.05)
@@ -641,11 +654,11 @@ def game_run(window, canvas, height, width):
         score_txt = "score: " + str(score)
         canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
         canvas.create_text(level_x_pos, level_y_pos,
-                        font="Times 20 italic bold",
-                        text=level_txt, anchor="nw")
+                           font="Times 20 italic bold",
+                           text=level_txt, anchor="nw")
         canvas.create_text(score_x_pos, score_y_pos,
-                        font="Times 20 italic bold",
-                        text=score_txt, anchor="nw")
+                           font="Times 20 italic bold",
+                           text=score_txt, anchor="nw")
         if level == 1:
             total = 2
         if level == 2:
@@ -717,7 +730,7 @@ player_box = 0
 enemy_box = 0
 canvas = Canvas(main_window, width=width, height=height)
 level = player_settings['level']
-enemy_img = PhotoImage(file=".//enemy//enemy.png")
+enemy_img = PhotoImage(file="./enemy/enemy.png")
 aim = []
 aim_f = []
 shoot_anim = []
@@ -728,36 +741,37 @@ lives = player_settings['lives']
 pause = False
 counter_bind = 1
 pause_btn = 'p'
-aim.append(PhotoImage(file=".//Aim//Aim_01.png"))
-aim.append(PhotoImage(file=".//Aim//Aim_02.png"))
-aim.append(PhotoImage(file=".//Aim//Aim_03.png"))
-aim.append(PhotoImage(file=".//Aim//Aim_04.png"))
-aim.append(PhotoImage(file=".//Aim//Aim_05.png"))
-aim.append(PhotoImage(file=".//Aim//Aim_06.png"))
-shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_01.png"))
-shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_02.png"))
-shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_03.png"))
-shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_04.png"))
-shoot_anim.append(PhotoImage(file=".//Shoot//Shoot_05.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_01F.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_02F.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_03F.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_04F.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_05F.png"))
-aim_f.append(PhotoImage(file=".//Aim//Aim_06F.png"))
-shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_01F.png"))
-shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_02F.png"))
-shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_03F.png"))
-shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_04F.png"))
-shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_05F.png"))
-idle = PhotoImage(file=".//Idle//idle.gif")
+player_session_end = False
+aim.append(PhotoImage(file="./Aim/Aim_01.png"))
+aim.append(PhotoImage(file="./Aim/Aim_02.png"))
+aim.append(PhotoImage(file="./Aim/Aim_03.png"))
+aim.append(PhotoImage(file="./Aim/Aim_04.png"))
+aim.append(PhotoImage(file="./Aim/Aim_05.png"))
+aim.append(PhotoImage(file="./Aim/Aim_06.png"))
+shoot_anim.append(PhotoImage(file="./Shoot/Shoot_01.png"))
+shoot_anim.append(PhotoImage(file="./Shoot/Shoot_02.png"))
+shoot_anim.append(PhotoImage(file="./Shoot/Shoot_03.png"))
+shoot_anim.append(PhotoImage(file="./Shoot/Shoot_04.png"))
+shoot_anim.append(PhotoImage(file="./Shoot/Shoot_05.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_01F.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_02F.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_03F.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_04F.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_05F.png"))
+aim_f.append(PhotoImage(file="./Aim/Aim_06F.png"))
+shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_01F.png"))
+shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_02F.png"))
+shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_03F.png"))
+shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_04F.png"))
+shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_05F.png"))
+idle = PhotoImage(file="./Idle/idle.gif")
 halt = False
-play_btn_img = PhotoImage(file="./btns//play_btn.png")
-load_btn_img = PhotoImage(file="./btns//load_btn.png")
-leaderboard_btn_img = PhotoImage(file="./btns//leaderboard_btn.png")
-resolution_btn_img = PhotoImage(file="./btns//resolution_btn.png")
-change_keys_btn_img = PhotoImage(file="./btns//change_keys_btn.png")
-quit_key_btn_img = PhotoImage(file="./btns//quit_btn.png")
+play_btn_img = PhotoImage(file="./btns/play_btn.png")
+load_btn_img = PhotoImage(file="./btns/load_btn.png")
+leaderboard_btn_img = PhotoImage(file="./btns/leaderboard_btn.png")
+resolution_btn_img = PhotoImage(file="./btns/resolution_btn.png")
+change_keys_btn_img = PhotoImage(file="./btns/change_keys_btn.png")
+quit_key_btn_img = PhotoImage(file="./btns/quit_btn.png")
 list_of_btns = []
 current_player_img = idle
 entry_menu()
