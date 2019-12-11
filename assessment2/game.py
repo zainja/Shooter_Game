@@ -163,6 +163,39 @@ def unpause(event):
     ball_move()
 
 
+def boss_key_start(event):
+    global height, width, pause, main_window, work_scrn, pause_btn, canvas
+    pause = True
+    main_window.attributes("-fullscreen", True)
+    # canvas.config(width=main_window.winfo_screenwidth,
+    #               height=main_window.winfo_screenheight)
+    work_scrn = canvas.create_rectangle(0, 0, width, height, fill='black')
+    main_window.unbind('<Motion>')
+    main_window.unbind(shoot_key)
+    main_window.unbind('x')
+    main_window.unbind('nowall')
+    main_window.unbind('bullet')
+    main_window.unbind(pause_btn)
+    main_window.bind('b', boss_key_destory)
+
+
+def boss_key_destory(event):
+    global work_scrn
+    canvas.delete(work_scrn)
+    main_window.bind('b', boss_key_start)
+    main_window.bind('x', unpause)
+
+
+def cheat_no_walls(event):
+    global no_walls
+    no_walls = True
+
+
+def unlimted_bullets(event):
+    global no_limit_bullets
+    no_limit_bullets = True
+
+
 def load_game():
     global player_settings, level, canvas
     global score, lives, shoot_key, height, width, halt
