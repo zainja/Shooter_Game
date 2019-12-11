@@ -1,5 +1,5 @@
-from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label,\
-                    Entry
+from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label, \
+    Entry
 import math
 import time
 import random
@@ -9,7 +9,7 @@ player_settings = {
     'level': 1,
     'score': 0,
     'lives': 5,
-    'key': '<Button-1>',
+    'shoot_key': '<Button-1>',
     'screen_height': 900,
     'screen_width': 1200
 }
@@ -28,7 +28,7 @@ def update_dictionary(mode, var_to_update):
     elif mode == 3:
         player_settings['lives'] = var_to_update
     elif mode == 4:
-        player_settings['key'] = var_to_update
+        player_settings['shoot_key'] = var_to_update
     elif mode == 5:
         player_settings['screen_height'] = var_to_update
     elif mode == 6:
@@ -58,6 +58,7 @@ def btn_switch(mode):
     if mode == 4:
         change_binding()
     if mode == 5:
+        empty_game_lists()
         main_window.destroy()
     if mode == 6:
         entry_menu()
@@ -66,7 +67,8 @@ def btn_switch(mode):
 
 
 def enter_name():
-    global main_window, width, list_of_btns
+    global main_window, width, list_of_btns, halt
+    halt = False
     label_enter_name = Label(main_window, text="Enter a Name",
                              font=('Times new roman', 25))
     label_enter_name.place(x=0.5, rely=0.4, anchor='nw')
@@ -81,8 +83,12 @@ def enter_name():
 
 
 def update_name(name):
-    update_dictionary(0, name)
-    btn_switch(0)
+    if name == '':
+        messagebox.showerror('Entry Error', 'Enter a name ')
+    else:
+        empty_game_lists()
+        update_dictionary(0, name)
+        btn_switch(0)
 
 
 def resolution_change():
@@ -128,26 +134,37 @@ def bind_new_key(event):
     btn_switch(6)
 
 
-def pause_game():
-    global main_window, height, width, canvas
-    messagebox.showinfo("Pause", "Game paused")
-    time.sleep(0.001)
-    time_label = Label(main_window, text="3", font="Times 40 italic bold")
-    time_label.pack()
-    time_label.place(x=int(width/2), y=int(height/2))
+def pause_game(event):
+    global pause, shoot_key, main_window
+    pause = True
+    main_window.unbind('<Motion>')
+    main_window.unbind(shoot_key)
+    main_window.bind('x', unpause)
+
+
+def unpause(event):
+    global pause, shoot_key, main_window
+    pause = False
+    main_window.bind('<Motion>', mouse_movement)
+    main_window.bind(shoot_key, shoot)
+    wait_label = Label(main_window, text='3', font='fixedsys 10')
+    wait_label.place(relx=0.5, rely=0.5, anchor='center')
+    wait_label.pack()
     time.sleep(1)
-    time_label.config(text="2")
-    time_label.pack()
+    wait_label.config(text='2')
+    wait_label.pack()
     time.sleep(1)
-    time_label.config(text="1")
-    time_label.pack()
-    time.sleep(0.001)
-    time_label.destroy()
+    wait_label.config(text='1')
+    wait_label.pack()
+    time.sleep(1)
+    wait_label.destroy()
+    ball_move()
 
 
 def load_game():
     global player_settings, level, canvas
-    global score, lives, shoot_key, height, width
+    global score, lives, shoot_key, height, width, halt
+    halt = False
     try:
         game_settings_read = open('player_settings')
         game_settings_read_items = game_settings_read.read().split()
@@ -161,9 +178,16 @@ def load_game():
             level = int(player_settings['level'])
             score = int(player_settings['score'])
             lives = int(player_settings['lives'])
-            shoot_key = player_settings['key']
+            shoot_key = player_settings['shoot_key']
             height = int(player_settings['screen_height'])
             width = int(player_settings['screen_width'])
+            if lives == 0:
+                level = 1
+                score = 0
+                lives = 5
+                update_dictionary(1, level)
+                update_dictionary(2, score)
+                update_dictionary(3, lives)
             main_window.geometry(str(width) + "x" + str(height))
             canvas.configure(width=width, height=height)
             print(width)
@@ -175,8 +199,7 @@ def load_game():
 
 def leaderboard_read():
     global canvas, main_window, width, height, list_of_btns
-    canvas.delete('all')
-    canvas.create_text(width*0.5, height*0.1, font="Times 20 italic bold",
+    canvas.create_text(width * 0.5, height * 0.1, font="Times 20 italic bold",
                        text='level_txt', anchor="center")
     back_btn = Button(main_window, text='back', command=lambda: btn_switch(6))
     back_btn.place(relx=0.3, rely=0.1, anchor='center')
@@ -184,13 +207,14 @@ def leaderboard_read():
     canvas.pack()
 
     try:
-        y = height*0.2
+        y = height * 0.2
         read_leaderboard = open('leaderboard')
         read_leaderboard_list = read_leaderboard.read().split('\n')
         for entries in read_leaderboard_list:
-            canvas.create_text(width*0.5, y, text=entries,
+            canvas.create_text(width * 0.5, y, text=entries,
                                font='Times 20 italic bold', anchor='center')
-            y += height*0.2
+            y += height * 0.2
+        read_leaderboard.close()
     except IOError:
         messagebox.showerror('File not found', 'there is no previous games')
         btn_switch(6)
@@ -206,21 +230,14 @@ def leaderboard_write():
         if len(player_name) > 10:
             player_name = player_name[0:10]
         required_stars = total_char_count - (len(score) + len(player_name))
-        string_single_entry = player_name + ("-"*required_stars) + score + "\n"
+        string_single_entry = player_name + ("-" * required_stars) + score + "\n"
         leaderboard.write(string_single_entry)
         leaderboard.close()
 
 
-def restart(mode):
-    global main_window, canvas, height, width, enemy_box, lives, \
-        ball, list_of_boxes, grid, ball_movement, player_box, level, score
-    if mode == 0:
-        level = 1
-        update_dictionary(1, level)
-        score = 0
-        update_dictionary(2, score)
-        lives = 5
-        update_dictionary(3, lives)
+def empty_game_lists():
+    global ball, list_of_boxes, grid, ball_movement, player_box, \
+            enemy_box
     ball = []
     list_of_boxes = []
     grid = []
@@ -228,6 +245,20 @@ def restart(mode):
     enemy_box = 0
     player_box = 0
     canvas.delete("all")
+
+
+def restart(mode):
+    global main_window, canvas, height, width, lives, \
+           level, score
+    if mode == 0:
+        level = 1
+        update_dictionary(1, level)
+        score = 0
+        update_dictionary(2, score)
+        lives = 5
+        update_dictionary(3, lives)
+
+    empty_game_lists()
     game_run(main_window, canvas, height, width)
 
 
@@ -280,7 +311,7 @@ def player_won():
 
 
 def player_lost():
-    global level, score, lives
+    global level, score, lives, halt, main_window, shoot_key
     level -= 1
     lives -= 1
     if level < 1:
@@ -288,83 +319,21 @@ def player_lost():
     update_dictionary(1, level)
     update_dictionary(3, lives)
     if lives == 0:
+        halt = True
+        main_window.unbind(shoot_key)
+        main_window.unbind('<Motion>')
+        empty_game_lists()
         messagebox.showinfo("Game lost", "You have no lives left")
         leaderboard_write()
         btn_switch(2)
     else:
         messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
-    restart(1)
-
-
-def ball_move():
-    global ball, ball_movement, width, height, player, list_of_boxes,\
-           enemy, shoot_key
-    if len(ball) >= 3:
-        main_window.unbind(shoot_key)
-    while True:
-        for i in range(0, len(ball)):
-            i_coords = canvas.coords(ball[i])
-            if i_coords[2] >= width:
-                ball_movement[i][0] = - ball_movement[i][0]
-            if i_coords[0] <= 0:
-                ball_movement[i][0] = - ball_movement[i][0]
-            if i_coords[3] >= height:
-                ball_movement[i][1] = - ball_movement[i][1]
-            if i_coords[1] <= 0.1 * height:
-                ball_movement[i][1] = - ball_movement[i][1]
-            if ball_hits_object(ball[i], player):
-                player_lost()
-            if ball_hits_object(ball[i], enemy):
-                player_won()
-            if len(list_of_boxes) != 0:
-                for j in range(len(list_of_boxes)):
-                    box_coords = canvas.coords(list_of_boxes[j])
-                    if (i_coords[0] > box_coords[0] and i_coords[0] < box_coords[2]) or (
-                            i_coords[2] > box_coords[0] and i_coords[2] < box_coords[2]):
-                        # coming from left side
-                        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
-                            ball_movement[i][1] = - ball_movement[i][1]
-                        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
-                            ball_movement[i][1] = - ball_movement[i][1]
-
-                    if (i_coords[1] > box_coords[1] and i_coords[1] < box_coords[3]) or (
-                            i_coords[3] > box_coords[1] and i_coords[3] < box_coords[3]):
-                        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
-                            ball_movement[i][0] = - ball_movement[i][0]
-                        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
-                            ball_movement[i][0] = - ball_movement[i][0]
-            canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
-        canvas.update()
-        time.sleep(0.001)
-
-
-def ball_hits_object(i, j):
-    i_coords = canvas.coords(i)
-    box_coords = []
-    if j == player:
-        box_coords = player_hit_box()
-    if j == enemy:
-        box_coords = enemy_hit_box()
-    # check for right and left
-    if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (
-            i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
-        # coming from left side
-        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
-            return True
-        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
-            return True
-    if (i_coords[0] >= box_coords[0] and i_coords[0] <= box_coords[2]) or (
-            i_coords[2] >= box_coords[0] and i_coords[2] <= box_coords[2]):
-        # coming from left side
-        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
-            return True
-        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
-            return True
-    return False
+        restart(1)
 
 
 def mouse_movement(event):
-    global aim, player, current_player_img
+    global aim, player, current_player_img, pause, canvas, shoot_key, \
+                counter_bind
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos = player_hit_box()
@@ -391,8 +360,8 @@ def mouse_movement(event):
 
 
 def shoot(event):
-    global ball, aim_line, ball_movement, aim, player, current_player_img,\
-         shoot_anim, idle, shoot_key
+    global ball, aim_line, ball_movement, aim, player, current_player_img, \
+        shoot_anim, idle, shoot_key
     pos_of_the_line = canvas.coords(aim_line)
     i_component = pos_of_the_line[2] - pos_of_the_line[0]
     j_component = pos_of_the_line[3] - pos_of_the_line[1]
@@ -426,10 +395,81 @@ def shoot(event):
 
     ball.append(
         canvas.create_oval(pos_of_the_line[2], pos_of_the_line[3],
-                           pos_of_the_line[2] + 10, pos_of_the_line[3] + 10,
+                           pos_of_the_line[2] + 10,
+                           pos_of_the_line[3] + 10,
                            fill="yellow"))
     ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
     ball_move()
+
+
+def ball_move():
+    global ball, ball_movement, width, height, player, list_of_boxes, \
+        enemy, shoot_key, pause, lives
+    if len(ball) >= 3:
+        main_window.unbind(shoot_key)
+    while not pause:
+        for i in range(0, len(ball)):
+            i_coords = canvas.coords(ball[i])
+            if i_coords[2] >= width:
+                ball_movement[i][0] = - ball_movement[i][0]
+            if i_coords[0] <= 0:
+                ball_movement[i][0] = - ball_movement[i][0]
+            if i_coords[3] >= height:
+                ball_movement[i][1] = - ball_movement[i][1]
+            if i_coords[1] <= 0.1 * height:
+                ball_movement[i][1] = - ball_movement[i][1]
+            if ball_hits_object(ball[i], player):
+                player_lost()
+                if lives == 0:
+                    break
+            if ball_hits_object(ball[i], enemy):
+                player_won()
+            if len(list_of_boxes) != 0:
+                for j in range(len(list_of_boxes)):
+                    box_coords = canvas.coords(list_of_boxes[j])
+                    if (i_coords[0] > box_coords[0] and i_coords[0] < box_coords[2]) or (
+                            i_coords[2] > box_coords[0] and i_coords[2] < box_coords[2]):
+                        # coming from left side
+                        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
+                            ball_movement[i][1] = - ball_movement[i][1]
+                        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
+                            ball_movement[i][1] = - ball_movement[i][1]
+
+                    if (i_coords[1] > box_coords[1] and i_coords[1] < box_coords[3]) or (
+                            i_coords[3] > box_coords[1] and i_coords[3] < box_coords[3]):
+                        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
+                            ball_movement[i][0] = - ball_movement[i][0]
+                        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
+                            ball_movement[i][0] = - ball_movement[i][0]
+            canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
+        canvas.update()
+        time.sleep(0.001)
+    canvas.update()
+
+
+def ball_hits_object(i, j):
+    i_coords = canvas.coords(i)
+    box_coords = []
+    if j == player:
+        box_coords = player_hit_box()
+    if j == enemy:
+        box_coords = enemy_hit_box()
+    # check for right and left
+    if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (
+            i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
+        # coming from left side
+        if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
+            return True
+        elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
+            return True
+    if (i_coords[0] >= box_coords[0] and i_coords[0] <= box_coords[2]) or (
+            i_coords[2] >= box_coords[0] and i_coords[2] <= box_coords[2]):
+        # coming from left side
+        if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
+            return True
+        elif (i_coords[3] >= box_coords[1]) and (i_coords[1] <= box_coords[1]):
+            return True
+    return False
 
 
 def create_grid(height, width, total):
@@ -522,43 +562,43 @@ def place_enemy(grid, level):
 def check_placement(grid, enemy_box, player_box):
     print("enemy", str(enemy_box), "player", str(player_box))
     if grid[enemy_box][0] == grid[player_box][2] and \
-       grid[enemy_box][1] == grid[player_box][3]:
+            grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][0] and \
-       grid[enemy_box][1] == grid[player_box][3]:
+            grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][2] and \
-       grid[enemy_box][1] == grid[player_box][1]:
+            grid[enemy_box][1] == grid[player_box][1]:
         return True
     # corner 2
     if grid[enemy_box][2] == grid[player_box][0] and \
-       grid[enemy_box][1] == grid[player_box][3]:
+            grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][2] == grid[player_box][2] and \
-       grid[enemy_box][1] == grid[player_box][3]:
+            grid[enemy_box][1] == grid[player_box][3]:
         return True
     if grid[enemy_box][2] == grid[player_box][0] and \
-       grid[enemy_box][1] == grid[player_box][1]:
+            grid[enemy_box][1] == grid[player_box][1]:
         return True
     # corner 3
     if grid[enemy_box][0] == grid[player_box][2] and \
-       grid[enemy_box][3] == grid[player_box][1]:
+            grid[enemy_box][3] == grid[player_box][1]:
         return True
     if grid[enemy_box][0] == grid[player_box][2] and \
-       grid[enemy_box][3] == grid[player_box][3]:
+            grid[enemy_box][3] == grid[player_box][3]:
         return True
     if grid[enemy_box][0] == grid[player_box][0] and \
-       grid[enemy_box][3] == grid[player_box][1]:
+            grid[enemy_box][3] == grid[player_box][1]:
         return True
     # corner 4
     if grid[enemy_box][2] == grid[player_box][0] and \
-       grid[enemy_box][3] == grid[player_box][1]:
+            grid[enemy_box][3] == grid[player_box][1]:
         return True
     if grid[enemy_box][2] == grid[player_box][0] and \
-       grid[enemy_box][3] == grid[player_box][3]:
+            grid[enemy_box][3] == grid[player_box][3]:
         return True
     if grid[enemy_box][2] == grid[player_box][2] and \
-       grid[enemy_box][3] == grid[player_box][1]:
+            grid[enemy_box][3] == grid[player_box][1]:
         return True
     # equal
     if enemy_box == player_box:
@@ -590,42 +630,41 @@ def generated_areas(list_of_grid):
 
 
 def game_run(window, canvas, height, width):
-    global list_of_boxes, shoot_key
-    total = 0
-    level_x_pos = int(width * 0.05)
-    level_y_pos = int((0.1 * height) / 3)
-    score_x_pos = width * 0.2
-    score_y_pos = level_y_pos
-    level_txt = "level: " + str(level)
-    score_txt = "score: " + str(score)
-    canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
-    canvas.create_text(level_x_pos, level_y_pos, font="Times 20 italic bold",
-                       text=level_txt, anchor="nw")
-    canvas.create_text(score_x_pos, score_y_pos, font="Times 20 italic bold",
-                       text=score_txt, anchor="nw")
-    pause_btn = Button(window, text="pause", command=pause_game)
-    pause_btn.config()
-    pause_btn.place(x=0.9*width, y=level_y_pos)
-    menu_btn = Button(window, text="menu", command=lambda: btn_switch(6))
-    menu_btn.place(x=0.8*width, y=level_y_pos)
-    if level == 1:
-        total = 2
-    if level == 2:
-        total = 3
-    if level == 3:
-        total = 4
-    if level >= 4:
-        total = 5
-    grid = create_grid(height, width, total)
-    for i in grid:
-        canvas.create_rectangle(i)
-    place_player(grid)
-    place_enemy(grid, level)
-    list_of_boxes = generated_areas(grid)
-    main_window.bind('<Motion>', mouse_movement)
-    main_window.bind(shoot_key, shoot)
-    canvas.pack()
-    window.mainloop()
+    global list_of_boxes, shoot_key, pause, pause_btn, halt
+    if not halt:
+        total = 0
+        level_x_pos = int(width * 0.05)
+        level_y_pos = int((0.1 * height) / 3)
+        score_x_pos = width * 0.2
+        score_y_pos = level_y_pos
+        level_txt = "level: " + str(level)
+        score_txt = "score: " + str(score)
+        canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
+        canvas.create_text(level_x_pos, level_y_pos,
+                        font="Times 20 italic bold",
+                        text=level_txt, anchor="nw")
+        canvas.create_text(score_x_pos, score_y_pos,
+                        font="Times 20 italic bold",
+                        text=score_txt, anchor="nw")
+        if level == 1:
+            total = 2
+        if level == 2:
+            total = 3
+        if level == 3:
+            total = 4
+        if level >= 4:
+            total = 5
+        grid = create_grid(height, width, total)
+        for i in grid:
+            canvas.create_rectangle(i)
+        place_player(grid)
+        place_enemy(grid, level)
+        list_of_boxes = generated_areas(grid)
+        main_window.bind('<Motion>', mouse_movement)
+        main_window.bind(shoot_key, shoot)
+        main_window.bind(pause_btn, pause_game)
+        canvas.pack()
+        window.mainloop()
 
 
 def entry_menu():
@@ -637,23 +676,23 @@ def entry_menu():
     play_btn.place(x=width * 0.5, y=height * 0.1, anchor='center')
     load_game_btn = Button(main_window, width=btn_width, height=btn_height,
                            image=load_btn_img, command=lambda: btn_switch(1))
-    load_game_btn.place(x=width *0.5, y=height * 0.25, anchor='center')
+    load_game_btn.place(x=width * 0.5, y=height * 0.25, anchor='center')
     leaderboard_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=leaderboard_btn_img,
                              command=lambda: btn_switch(2))
-    leaderboard_btn.place(x=width *0.5, y=height * 0.4, anchor='center')
+    leaderboard_btn.place(x=width * 0.5, y=height * 0.4, anchor='center')
     resoloution_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=resolution_btn_img,
                              command=lambda: btn_switch(3))
-    resoloution_btn.place(x=width *0.5, y=height * 0.55, anchor='center')
+    resoloution_btn.place(x=width * 0.5, y=height * 0.55, anchor='center')
     change_keys_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=change_keys_btn_img,
                              command=lambda: btn_switch(4))
-    change_keys_btn.place(x=width *0.5, y=height * 0.70, anchor='center')
+    change_keys_btn.place(x=width * 0.5, y=height * 0.70, anchor='center')
     quit_key_btn = Button(main_window, width=btn_width, height=btn_height,
                           image=quit_key_btn_img,
                           command=lambda: btn_switch(5))
-    quit_key_btn.place(x=width *0.5, y=height * 0.85, anchor='center')
+    quit_key_btn.place(x=width * 0.5, y=height * 0.85, anchor='center')
     list_of_btns.append(play_btn)
     list_of_btns.append(load_game_btn)
     list_of_btns.append(leaderboard_btn)
@@ -683,10 +722,12 @@ aim = []
 aim_f = []
 shoot_anim = []
 shoot_anim_f = []
-shoot_key = player_settings['key']
+shoot_key = player_settings['shoot_key']
 score = player_settings['score']
 lives = player_settings['lives']
-
+pause = False
+counter_bind = 1
+pause_btn = 'p'
 aim.append(PhotoImage(file=".//Aim//Aim_01.png"))
 aim.append(PhotoImage(file=".//Aim//Aim_02.png"))
 aim.append(PhotoImage(file=".//Aim//Aim_03.png"))
@@ -710,7 +751,7 @@ shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_03F.png"))
 shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_04F.png"))
 shoot_anim_f.append(PhotoImage(file=".//Shoot//Shoot_05F.png"))
 idle = PhotoImage(file=".//Idle//idle.gif")
-
+halt = False
 play_btn_img = PhotoImage(file="./btns//play_btn.png")
 load_btn_img = PhotoImage(file="./btns//load_btn.png")
 leaderboard_btn_img = PhotoImage(file="./btns//leaderboard_btn.png")
