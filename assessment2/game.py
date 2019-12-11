@@ -137,13 +137,13 @@ def bind_new_key(event):
 
 
 def pause_game(event):
-    global pause, shoot_key, main_window
+    global pause, shoot_key, main_window, boss_key
     pause = True
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
     main_window.unbind(pause_btn)
     main_window.unbind('nowall')
-    main_window.unbind('bullet')
+    main_window.unbind('limits')
     main_window.bind('x', unpause)
 
 
@@ -156,7 +156,7 @@ def unpause(event):
     main_window.bind(boss_key, boss_key_start)
     main_window.bind(pause_btn, pause_game)
     main_window.bind('nowall', no_walls)
-    main_window.bind('bullet', no_limit_bullets)
+    main_window.bind('limits', no_limit_bullets)
     wait_label = canvas.create_text(width/2, height/2, text='3',
                                     font='fixedsys 30')
     canvas.update()
@@ -182,7 +182,7 @@ def boss_key_start(event):
     main_window.unbind(shoot_key)
     main_window.unbind('x')
     main_window.unbind('nowall')
-    main_window.unbind('bullet')
+    main_window.unbind('limits')
     main_window.unbind(pause_btn)
     main_window.bind('b', boss_key_destory)
 
@@ -441,9 +441,10 @@ def shoot(event):
 
 def ball_move():
     global ball, ball_movement, width, height, player, list_of_boxes, \
-        enemy, shoot_key, pause, lives
-    if len(ball) >= 3:
-        main_window.unbind(shoot_key)
+        enemy, shoot_key, pause, lives, no_limit_bullets, no_walls
+    if not no_limit_bullets:
+        if len(ball) >= 3:
+            main_window.unbind(shoot_key)
     while not pause:
         for i in range(0, len(ball)):
             i_coords = canvas.coords(ball[i])
@@ -457,35 +458,34 @@ def ball_move():
                 ball_movement[i][1] = - ball_movement[i][1]
             if ball_hits_object(ball[i], player):
                 player_lost()
-                if lives == 0:
-                    break
             if ball_hits_object(ball[i], enemy):
                 player_won()
-            if len(list_of_boxes) != 0:
-                for j in range(len(list_of_boxes)):
-                    box_coords = canvas.coords(list_of_boxes[j])
-                    if (i_coords[0] > box_coords[0] and i_coords[0] <
-                        box_coords[2]) or (
-                            i_coords[2] > box_coords[0] and i_coords[2] <
-                            box_coords[2]):
-                        # coming from left side
-                        if (i_coords[1] <= box_coords[3]) and (
-                                i_coords[3] >= box_coords[3]):
-                            ball_movement[i][1] = - ball_movement[i][1]
-                        elif (i_coords[3] >= box_coords[1]) and (
-                                i_coords[1] <= box_coords[1]):
-                            ball_movement[i][1] = - ball_movement[i][1]
+            if not no_walls:
+                if len(list_of_boxes) != 0:
+                    for j in range(len(list_of_boxes)):
+                        box_coords = canvas.coords(list_of_boxes[j])
+                        if (i_coords[0] > box_coords[0] and i_coords[0] <
+                            box_coords[2]) or (
+                                i_coords[2] > box_coords[0] and i_coords[2] <
+                                box_coords[2]):
+                            # coming from left side
+                            if (i_coords[1] <= box_coords[3]) and (
+                                    i_coords[3] >= box_coords[3]):
+                                ball_movement[i][1] = - ball_movement[i][1]
+                            elif (i_coords[3] >= box_coords[1]) and (
+                                    i_coords[1] <= box_coords[1]):
+                                ball_movement[i][1] = - ball_movement[i][1]
 
-                    if (i_coords[1] > box_coords[1] and i_coords[1] <
-                        box_coords[3]) or (
-                            i_coords[3] > box_coords[1] and i_coords[3] <
-                            box_coords[3]):
-                        if (i_coords[0] <= box_coords[2]) and (
-                                i_coords[2] >= box_coords[2]):
-                            ball_movement[i][0] = - ball_movement[i][0]
-                        elif (i_coords[2] >= box_coords[0]) and (
-                                i_coords[0] <= box_coords[0]):
-                            ball_movement[i][0] = - ball_movement[i][0]
+                        if (i_coords[1] > box_coords[1] and i_coords[1] <
+                            box_coords[3]) or (
+                                i_coords[3] > box_coords[1] and i_coords[3] <
+                                box_coords[3]):
+                            if (i_coords[0] <= box_coords[2]) and (
+                                    i_coords[2] >= box_coords[2]):
+                                ball_movement[i][0] = - ball_movement[i][0]
+                            elif (i_coords[2] >= box_coords[0]) and (
+                                    i_coords[0] <= box_coords[0]):
+                                ball_movement[i][0] = - ball_movement[i][0]
             canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
         canvas.update()
         time.sleep(0.001)
@@ -717,12 +717,18 @@ def game_run(window, canvas, height, width):
         main_window.bind('<Motion>', mouse_movement)
         main_window.bind(shoot_key, shoot)
         main_window.bind(pause_btn, pause_game)
+        main_window.bind(boss_key, boss_key_start)
+        main_window.bind('nowall', cheat_no_walls)
+        main_window.bind('limits', unlimted_bullets)
         canvas.pack()
         window.mainloop()
 
 
 def entry_menu():
-    global main_window, height, width, canvas, height, width, list_of_btns
+    global main_window, height, width, canvas, height, width, list_of_btns, \
+           no_limit_bullets, no_walls
+    no_limit_bullets = False
+    no_walls = False
     btn_width = int(width * 0.6)
     btn_height = int(height * 0.1)
     play_btn = Button(main_window, width=btn_width, height=btn_height,
@@ -776,12 +782,16 @@ aim = []
 aim_f = []
 shoot_anim = []
 shoot_anim_f = []
+work_scrn = None
+no_walls = False
+no_limit_bullets = False
 shoot_key = player_settings['shoot_key']
 score = player_settings['score']
 lives = player_settings['lives']
 pause = False
 counter_bind = 1
 pause_btn = 'p'
+boss_key = 'b'
 player_session_end = False
 aim.append(PhotoImage(file="./Aim/Aim_01.png"))
 aim.append(PhotoImage(file="./Aim/Aim_02.png"))
