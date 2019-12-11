@@ -1,4 +1,4 @@
-from tkinter import Tk, Canvas, Menu, messagebox, PhotoImage, Button, Label,\
+from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label,\
                     Entry
 import math
 import time
@@ -43,7 +43,8 @@ def update_dictionary(mode, var_to_update):
 
 
 def btn_switch(mode):
-    global main_window, canvas, height, width, list_of_btns
+    global main_window, canvas, height, width, list_of_btns, canvas
+    canvas.delete('all')
     for items in list_of_btns:
         items.destroy()
     if mode == 0:
@@ -51,7 +52,7 @@ def btn_switch(mode):
     if mode == 1:
         load_game()
     if mode == 2:
-        leaderboard()
+        leaderboard_read()
     if mode == 3:
         resolution_change()
     if mode == 4:
@@ -68,12 +69,12 @@ def enter_name():
     global main_window, width, list_of_btns
     label_enter_name = Label(main_window, text="Enter a Name",
                              font=('Times new roman', 25))
-    label_enter_name.place(relx=0.1, rely=0.5)
+    label_enter_name.place(x=0.5, rely=0.4, anchor='nw')
     entry_name = Entry(main_window, width=int(width * 0.06))
-    entry_name.place(relx=0.1, rely=0.6)
+    entry_name.place(relx=0.5, rely=0.5, anchor='center')
     confirm_btn = Button(text='start',
                          command=lambda: update_name(entry_name.get()))
-    confirm_btn.place(relx=0.1, rely=0.7)
+    confirm_btn.place(relx=0.5, rely=0.7, anchor='center')
     list_of_btns.append(label_enter_name)
     list_of_btns.append(entry_name)
     list_of_btns.append(confirm_btn)
@@ -128,7 +129,7 @@ def bind_new_key(event):
 
 
 def pause_game():
-    global main_window, height, width
+    global main_window, height, width, canvas
     messagebox.showinfo("Pause", "Game paused")
     time.sleep(0.001)
     time_label = Label(main_window, text="3", font="Times 40 italic bold")
@@ -147,29 +148,67 @@ def pause_game():
 def load_game():
     global player_settings, level, canvas
     global score, lives, shoot_key, height, width
-    game_settings_read = open('player_settings')
-    game_settings_read_items = game_settings_read.read().split()
-    print(game_settings_read_items)
-    if game_settings_read_items[0] == 'stock':
-        enter_name()
-    else:
-        for index in range(len(game_settings_read_items)):
-            update_dictionary(index, game_settings_read_items[index])
-        game_settings_read.close()
-        level = int(player_settings['level'])
-        score = int(player_settings['score'])
-        lives = int(player_settings['lives'])
-        shoot_key = player_settings['key']
-        height = int(player_settings['screen_height'])
-        width = int(player_settings['screen_width'])
-        main_window.geometry(str(width) + "x" + str(height))
-        canvas.configure(width=width, height=height)
-        print(width)
-        game_run(main_window, canvas, height, width)
+    try:
+        game_settings_read = open('player_settings')
+        game_settings_read_items = game_settings_read.read().split()
+        print(game_settings_read_items)
+        if game_settings_read_items[0] == 'stock':
+            enter_name()
+        else:
+            for index in range(len(game_settings_read_items)):
+                update_dictionary(index, game_settings_read_items[index])
+            game_settings_read.close()
+            level = int(player_settings['level'])
+            score = int(player_settings['score'])
+            lives = int(player_settings['lives'])
+            shoot_key = player_settings['key']
+            height = int(player_settings['screen_height'])
+            width = int(player_settings['screen_width'])
+            main_window.geometry(str(width) + "x" + str(height))
+            canvas.configure(width=width, height=height)
+            print(width)
+            game_run(main_window, canvas, height, width)
+    except IOError:
+        messagebox.showerror('File not found', 'there is no saved games')
+        btn_switch(6)
 
 
-def leaderboard():
-    global player_settingsser
+def leaderboard_read():
+    global canvas, main_window, width, height, list_of_btns
+    canvas.delete('all')
+    canvas.create_text(width*0.5, height*0.1, font="Times 20 italic bold",
+                       text='level_txt', anchor="center")
+    back_btn = Button(main_window, text='back', command=lambda: btn_switch(6))
+    back_btn.place(relx=0.3, rely=0.1, anchor='center')
+    list_of_btns.append(back_btn)
+    canvas.pack()
+
+    try:
+        y = height*0.2
+        read_leaderboard = open('leaderboard')
+        read_leaderboard_list = read_leaderboard.read().split('\n')
+        for entries in read_leaderboard_list:
+            canvas.create_text(width*0.5, y, text=entries,
+                               font='Times 20 italic bold', anchor='center')
+            y += height*0.2
+    except IOError:
+        messagebox.showerror('File not found', 'there is no previous games')
+        btn_switch(6)
+
+
+def leaderboard_write():
+    leaderboard = open('leaderboard', 'a')
+    total_char_count = 20
+    string_single_entry = ""
+    player_name = player_settings['player_name'] + '  '
+    score = '  score' + str(player_settings['score'])
+    if player_name != 'stock':
+        if len(player_name) > 10:
+            player_name = player_name[0:10]
+        required_stars = total_char_count - (len(score) + len(player_name))
+        string_single_entry = player_name + ("-"*required_stars) + score + "\n"
+        leaderboard.write(string_single_entry)
+        leaderboard.close()
 
 
 def restart(mode):
@@ -243,20 +282,17 @@ def player_won():
 def player_lost():
     global level, score, lives
     level -= 1
-    score -= 150
     lives -= 1
-    if score < 0:
-        score = 0
     if level < 1:
         level = 1
-    if lives == 0:
-        level = 1
     update_dictionary(1, level)
-    update_dictionary(2, score)
     update_dictionary(3, lives)
     if lives == 0:
-        leaderboard()
-    messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
+        messagebox.showinfo("Game lost", "You have no lives left")
+        leaderboard_write()
+        btn_switch(2)
+    else:
+        messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
     restart(1)
 
 
@@ -598,26 +634,26 @@ def entry_menu():
     btn_height = int(height * 0.1)
     play_btn = Button(main_window, width=btn_width, height=btn_height,
                       image=play_btn_img, command=lambda: btn_switch(7))
-    play_btn.place(x=width * 0.03, y=height * 0.1)
+    play_btn.place(x=width * 0.5, y=height * 0.1, anchor='center')
     load_game_btn = Button(main_window, width=btn_width, height=btn_height,
                            image=load_btn_img, command=lambda: btn_switch(1))
-    load_game_btn.place(x=width * 0.03, y=height * 0.25)
+    load_game_btn.place(x=width *0.5, y=height * 0.25, anchor='center')
     leaderboard_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=leaderboard_btn_img,
                              command=lambda: btn_switch(2))
-    leaderboard_btn.place(x=width * 0.03, y=height * 0.4)
+    leaderboard_btn.place(x=width *0.5, y=height * 0.4, anchor='center')
     resoloution_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=resolution_btn_img,
                              command=lambda: btn_switch(3))
-    resoloution_btn.place(x=width * 0.03, y=height * 0.55)
+    resoloution_btn.place(x=width *0.5, y=height * 0.55, anchor='center')
     change_keys_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=change_keys_btn_img,
                              command=lambda: btn_switch(4))
-    change_keys_btn.place(x=width * 0.03, y=height * 0.70)
+    change_keys_btn.place(x=width *0.5, y=height * 0.70, anchor='center')
     quit_key_btn = Button(main_window, width=btn_width, height=btn_height,
                           image=quit_key_btn_img,
                           command=lambda: btn_switch(5))
-    quit_key_btn.place(x=width * 0.03, y=height * 0.85)
+    quit_key_btn.place(x=width *0.5, y=height * 0.85, anchor='center')
     list_of_btns.append(play_btn)
     list_of_btns.append(load_game_btn)
     list_of_btns.append(leaderboard_btn)
