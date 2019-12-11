@@ -141,25 +141,33 @@ def pause_game(event):
     pause = True
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
+    main_window.unbind(pause_btn)
+    main_window.unbind('nowall')
+    main_window.unbind('bullet')
     main_window.bind('x', unpause)
 
 
 def unpause(event):
-    global pause, shoot_key, main_window
+    global pause, shoot_key, main_window, boss_key, pause_btn, \
+            width, height
     pause = False
     main_window.bind('<Motion>', mouse_movement)
     main_window.bind(shoot_key, shoot)
-    wait_label = Label(main_window, text='3', font='fixedsys 10')
-    wait_label.place(relx=0.5, rely=0.5, anchor='center')
-    wait_label.pack()
+    main_window.bind(boss_key, boss_key_start)
+    main_window.bind(pause_btn, pause_game)
+    main_window.bind('nowall', no_walls)
+    main_window.bind('bullet', no_limit_bullets)
+    wait_label = canvas.create_text(width/2, height/2, text='3',
+                                    font='fixedsys 30')
+    canvas.update()
     time.sleep(1)
-    wait_label.config(text='2')
-    wait_label.pack()
+    canvas.itemconfig(wait_label, text='2')
+    canvas.update()
     time.sleep(1)
-    wait_label.config(text='1')
-    wait_label.pack()
+    canvas.itemconfig(wait_label, text='1')
+    canvas.update()
     time.sleep(1)
-    wait_label.destroy()
+    canvas.delete(wait_label)
     ball_move()
 
 
