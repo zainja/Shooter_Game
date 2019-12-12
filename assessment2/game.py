@@ -745,6 +745,15 @@ def game_play():
     while lives != 0:
         empty_game_lists()
         game_set_up()
+        bullet = 3
+        bullet_label = canvas.create_text(int(width * 0.45),
+                                          int((0.1 * height) / 3),
+                                          font='Times 20 bold',
+                                          anchor='nw')
+        wall_cheat = canvas.create_text(int(width * 0.7),
+                                        int((0.1 * height) / 3),
+                                        font='Times 20 bold',
+                                        anchor='nw')
         main_window.bind('<Motion>', mouse_movement)
         main_window.bind(shoot_key, shoot)
         main_window.bind(pause_btn, pause_game)
@@ -753,6 +762,15 @@ def game_play():
         main_window.bind('limits', unlimted_bullets)
         canvas.pack()
         while True:
+            bullet = 3 - len(ball)
+            canvas.itemconfig(bullet_label, text='Bullets: '+str(bullet))
+            if not no_limit_bullets:
+                if len(ball) == 3:
+                    main_window.unbind(shoot_key)
+            else:
+                canvas.itemconfig(bullet_label, text='Bullets: unlimited')
+            if no_walls:
+                canvas.itemconfig(wall_cheat, text='no wall active')
             if not pause:
                 ball_move()
                 if ball_move() == 1:
