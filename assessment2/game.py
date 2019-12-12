@@ -88,6 +88,28 @@ def update_name(name):
         game_play()
 
 
+def mid_res():
+    global width
+    width = 1200
+    global height
+    height = 900
+    main_window.geometry(str(width) + 'x' + str(height))
+    canvas.configure(width=width, height=height)
+    update_dictionary(5, height)
+    update_dictionary(6, width)
+
+
+def small_res():
+    global width
+    width = 800
+    global height
+    height = 600
+    main_window.geometry(str(width) + 'x' + str(height))
+    canvas.configure(width=width, height=height)
+    update_dictionary(5, height)
+    update_dictionary(6, width)
+
+
 def resolution_change():
     global width, height, main_window, list_of_tk_items
     btn_width = int(width * 0.6)
@@ -110,8 +132,9 @@ def resolution_change():
 
 def change_binding():
     global main_window, list_of_tk_items
+    text_key = 'Press any key to change it to the shooting key'
     label_info_bind = Label(main_window,
-                            text='Press any key to change it to the shooting key',
+                            text=text_key,
                             font=('Times new roman', 25))
     label_info_bind.place(relx=0.1, rely=0.5)
     list_of_tk_items.append(label_info_bind)
@@ -122,7 +145,7 @@ def bind_new_key(event):
     global shoot_key, main_window, list_of_tk_items
     shoot_key = '<' + event.keysym + '>'
     update_dictionary(4, shoot_key)
-    info_key = 'key choosen was ' + event.keysym
+    info_key = 'key chosen was ' + event.keysym
     main_window.unbind('<Key>')
     messagebox.showinfo('Key changes!', info_key)
     btn_switch(6)
@@ -208,6 +231,14 @@ def unlimted_bullets(event):
     no_limit_bullets = True
 
 
+def load_start():
+    global player_settings
+    if player_settings['player_name'] == 'stock':
+        btn_switch(7)
+    else:
+        btn_switch(0)
+
+
 def load_game():
     global player_settings, level, canvas
     global score, lives, shoot_key, height, width, halt
@@ -215,33 +246,40 @@ def load_game():
     try:
         game_settings_read = open('player_settings')
         game_settings_read_items = game_settings_read.read().split()
-        # print(game_settings_read_items)
-        if game_settings_read_items[0] == 'stock':
-            enter_name()
-        else:
-            for index in range(len(game_settings_read_items)):
-                update_dictionary(index, game_settings_read_items[index])
-            game_settings_read.close()
-            level = int(player_settings['level'])
-            score = int(player_settings['score'])
-            lives = int(player_settings['lives'])
-            shoot_key = player_settings['shoot_key']
-            height = int(player_settings['screen_height'])
-            width = int(player_settings['screen_width'])
-            if lives == 0:
-                level = 1
-                score = 0
-                lives = 5
-                update_dictionary(1, level)
-                update_dictionary(2, score)
-                update_dictionary(3, lives)
-            main_window.geometry(str(width) + 'x' + str(height))
-            canvas.configure(width=width, height=height)
-            # print(width)
-            game_play()
+        # print(game_settings_read_items)        
+        for index in range(len(game_settings_read_items)):
+            update_dictionary(index, game_settings_read_items[index])
+        game_settings_read.close()
+        level = int(player_settings['level'])
+        score = int(player_settings['score'])
+        lives = int(player_settings['lives'])
+        shoot_key = player_settings['shoot_key']
+        height = int(player_settings['screen_height'])
+        width = int(player_settings['screen_width'])
+        if lives == 0:
+            level = 1
+            score = 0
+            lives = 5
+            update_dictionary(1, level)
+            update_dictionary(2, score)
+            update_dictionary(3, lives)
+        main_window.geometry(str(width) + 'x' + str(height))
+        canvas.configure(width=width, height=height)
+        # print(width)
+        # game_play()
     except IOError:
-        messagebox.showerror('File not found', 'there is no saved games')
-        btn_switch(6)
+        # messagebox.showerror('File not found', 'there is no saved games')
+        # btn_switch(6)
+        update_dictionary(0, 'stock')
+        level = 1
+        update_dictionary(1, level)
+        score = 0
+        update_dictionary(2, score)
+        lives = 5
+        update_dictionary(3, lives)
+        update_dictionary(4, shoot_key)
+        update_dictionary(5, height)
+        update_dictionary(6, width)
 
 
 def leaderboard_read():
@@ -339,28 +377,6 @@ def fullscreen_toggle(event):
         if screen_number == 2:
             empty_game_lists()
             game_play()
-
-
-def mid_res():
-    global width
-    width = 1500
-    global height
-    height = 1200
-    main_window.geometry(str(width) + 'x' + str(height))
-    canvas.configure(width=width, height=height)
-    update_dictionary(5, height)
-    update_dictionary(6, width)
-
-
-def small_res():
-    global width
-    width = 800
-    global height
-    height = 600
-    main_window.geometry(str(width) + 'x' + str(height))
-    canvas.configure(width=width, height=height)
-    update_dictionary(5, height)
-    update_dictionary(6, width)
 
 
 def player_won():
@@ -784,8 +800,9 @@ def game_play():
 
 
 def entry_menu():
-    global main_window, height, width, canvas, height, width, list_of_tk_items,\
-           no_limit_bullets, no_walls, screen_number
+    global main_window, height, width, canvas, height, width,\
+           list_of_tk_items, no_limit_bullets, no_walls, screen_number
+    load_game()
     screen_number = 1
     no_limit_bullets = False
     no_walls = False
@@ -795,7 +812,7 @@ def entry_menu():
                       image=play_btn_img, command=lambda: btn_switch(7))
     play_btn.place(x=width * 0.5, y=height * 0.1, anchor='center')
     load_game_btn = Button(main_window, width=btn_width, height=btn_height,
-                           image=load_btn_img, command=lambda: btn_switch(1))
+                           image=load_btn_img, command=lambda: load_start())
     load_game_btn.place(x=width * 0.5, y=height * 0.25, anchor='center')
     leaderboard_btn = Button(main_window, width=btn_width, height=btn_height,
                              image=leaderboard_btn_img,
