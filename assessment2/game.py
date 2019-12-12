@@ -4,19 +4,6 @@ import math
 import time
 import random
 
-player_settings = {
-    'player_name': "stock",
-    'level': 1,
-    'score': 0,
-    'lives': 5,
-    'shoot_key': '<Button-1>',
-    'screen_height': 900,
-    'screen_width': 1200
-}
-
-width = player_settings['screen_width']
-height = player_settings['screen_height']
-
 
 def update_dictionary(mode, var_to_update):
     if mode == 0:
@@ -34,9 +21,9 @@ def update_dictionary(mode, var_to_update):
     elif mode == 6:
         player_settings['screen_width'] = var_to_update
     player_settings_file = open('player_settings', 'w')
-    player_info = ""
+    player_info = ''
     for x in player_settings.keys():
-        player_info += str(player_settings[x]) + "\n"
+        player_info += str(player_settings[x]) + '\n'
     player_settings_file.write(player_info)
     player_settings_file.close()
 
@@ -69,7 +56,7 @@ def btn_switch(mode):
 def enter_name():
     global main_window, width, list_of_tk_items, halt
     halt = False
-    label_enter_name = Label(main_window, text="Enter a Name",
+    label_enter_name = Label(main_window, text='Enter a Name',
                              font=('Times new roman', 25))
     label_enter_name.place(x=0.5, rely=0.4, anchor='nw')
     entry_name = Entry(main_window, width=int(width * 0.06))
@@ -124,8 +111,8 @@ def resolution_change():
 def change_binding():
     global main_window, list_of_tk_items
     label_info_bind = Label(main_window,
-                            text="Press any key to change it to the shooting key",
-                            font=("Times new roman", 25))
+                            text='Press any key to change it to the shooting key',
+                            font=('Times new roman', 25))
     label_info_bind.place(relx=0.1, rely=0.5)
     list_of_tk_items.append(label_info_bind)
     main_window.bind('<Key>', bind_new_key)
@@ -135,15 +122,19 @@ def bind_new_key(event):
     global shoot_key, main_window, list_of_tk_items
     shoot_key = '<' + event.keysym + '>'
     update_dictionary(4, shoot_key)
-    info_key = "key choosen was " + event.keysym
+    info_key = 'key choosen was ' + event.keysym
     main_window.unbind('<Key>')
-    messagebox.showinfo("Key changes!", info_key)
+    messagebox.showinfo('Key changes!', info_key)
     btn_switch(6)
 
 
 def pause_game(event):
-    global pause, shoot_key, main_window, boss_key
+    global pause, shoot_key, main_window, boss_key, canvas,\
+           height, width, pause_label
     pause = True
+    pause_label = canvas.create_text(int(width/2), int(height/2),
+                                     text='Paused',
+                                     font='Times 50 bold')
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
     main_window.unbind(pause_btn)
@@ -153,8 +144,9 @@ def pause_game(event):
 
 def unpause(event):
     global pause, shoot_key, main_window, boss_key, pause_btn, \
-            width, height
+            width, height, pause_label
     pause = False
+    canvas.delete(pause_label)
     main_window.bind('<Motion>', mouse_movement)
     main_window.bind(shoot_key, shoot)
     main_window.bind(boss_key, boss_key_start)
@@ -177,7 +169,7 @@ def unpause(event):
 def boss_key_start(event):
     global height, width, pause, main_window, work_scrn, pause_btn, canvas
     pause = True
-    main_window.wm_attributes("-fullscreen", True)
+    main_window.wm_attributes('-fullscreen', True)
     work_scrn_width = main_window.winfo_screenwidth()
     work_scrn_height = main_window.winfo_screenheight()
     print(work_scrn_width)
@@ -189,7 +181,7 @@ def boss_key_start(event):
     canvas.pack()
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
-    main_window.unbind('x')
+    main_window.unbind(unpause_btn)
     main_window.unbind('nowall')
     main_window.unbind('limits')
     main_window.unbind(pause_btn)
@@ -198,12 +190,12 @@ def boss_key_start(event):
 
 def boss_key_destroy(event):
     global work_scrn, height, width, main_window, canvas
-    main_window.wm_attributes("-fullscreen", False)
-    main_window.geometry(str(width) + "x" + str(height))
+    main_window.wm_attributes('-fullscreen', False)
+    main_window.geometry(str(width) + 'x' + str(height))
     canvas.configure(width=width, height=height)
     canvas.delete(work_scrn)
     main_window.bind('b', boss_key_start)
-    main_window.bind('x', unpause)
+    main_window.bind(unpause_btn, unpause)
 
 
 def cheat_no_walls(event):
@@ -243,7 +235,7 @@ def load_game():
                 update_dictionary(1, level)
                 update_dictionary(2, score)
                 update_dictionary(3, lives)
-            main_window.geometry(str(width) + "x" + str(height))
+            main_window.geometry(str(width) + 'x' + str(height))
             canvas.configure(width=width, height=height)
             # print(width)
             game_play()
@@ -255,8 +247,8 @@ def load_game():
 def leaderboard_read():
     global canvas, main_window, width, height, list_of_tk_items
     canvas.create_text(width * 0.5, height * 0.1,
-                       font="Times 20 italic bold",
-                       text='LEADERBOARD', anchor="center")
+                       font='Times 20 italic bold',
+                       text='LEADERBOARD', anchor='center')
     back_btn = Button(main_window, text='back', command=lambda: btn_switch(6))
     back_btn.place(relx=0.3, rely=0.1, anchor='center')
     list_of_tk_items.append(back_btn)
@@ -281,7 +273,7 @@ def leaderboard_read():
 def leaderboard_write():
     leaderboard = open('leaderboard', 'a')
     total_char_count = 20
-    string_single_entry = ""
+    string_single_entry = ''
     player_name = player_settings['player_name'] + '  '
     score = '  score' + str(player_settings['score'])
     if player_name != 'stock':
@@ -289,7 +281,7 @@ def leaderboard_write():
             player_name = player_name[0:10]
         required_stars = total_char_count - (len(score) + len(player_name))
         string_single_entry = player_name + (
-                    "-" * required_stars) + score + "\n"
+                    '-' * required_stars) + score + '\n'
         leaderboard.write(string_single_entry)
         leaderboard.close()
 
@@ -303,7 +295,7 @@ def empty_game_lists():
     ball_movement = []
     enemy_box = 0
     player_box = 0
-    canvas.delete("all")
+    canvas.delete('all')
 
 
 def restart(mode):
@@ -323,7 +315,7 @@ def fullscreen_toggle(event):
            player_settings
     if not screen_full:
         screen_full = True
-        main_window.wm_attributes("-fullscreen", True)
+        main_window.wm_attributes('-fullscreen', True)
         width = main_window.winfo_screenwidth()
         height = main_window.winfo_screenheight()
         canvas.configure(width=main_window.winfo_screenwidth(),
@@ -337,7 +329,7 @@ def fullscreen_toggle(event):
             game_play()
     else:
         screen_full = False
-        main_window.wm_attributes("-fullscreen", False)
+        main_window.wm_attributes('-fullscreen', False)
         width = int(player_settings['screen_width'])
         height = int(player_settings['screen_height'])
         canvas.configure(width=width, height=height)
@@ -354,7 +346,7 @@ def mid_res():
     width = 1500
     global height
     height = 1200
-    main_window.geometry(str(width) + "x" + str(height))
+    main_window.geometry(str(width) + 'x' + str(height))
     canvas.configure(width=width, height=height)
     update_dictionary(5, height)
     update_dictionary(6, width)
@@ -362,10 +354,10 @@ def mid_res():
 
 def small_res():
     global width
-    width = 600
+    width = 800
     global height
-    height = 800
-    main_window.geometry(str(width) + "x" + str(height))
+    height = 600
+    main_window.geometry(str(width) + 'x' + str(height))
     canvas.configure(width=width, height=height)
     update_dictionary(5, height)
     update_dictionary(6, width)
@@ -377,24 +369,22 @@ def player_won():
     score += 100
     update_dictionary(1, level)
     update_dictionary(2, score)
-    messagebox.showinfo("Game WON", "CONGRATS")
+    messagebox.showinfo('Game WON', 'CONGRATS')
 
 
 def player_lost():
-    global level, score, lives, halt, main_window, shoot_key, \
-        player_session_end
+    global level, score, lives, main_window, shoot_key
     level -= 1
     lives -= 1
     if level < 1:
         level = 1
     update_dictionary(1, level)
     update_dictionary(3, lives)
-    messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
+    messagebox.showinfo('LOST YA BASIC', 'YOU LOOOOOOOOSEEE')
 
 
 def mouse_movement(event):
-    global aim, player, current_player_img, pause, canvas, shoot_key, \
-        counter_bind
+    global aim, player, current_player_img, pause, canvas, shoot_key
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos = player_hit_box()
@@ -459,16 +449,13 @@ def shoot(event):
             canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3]-2,
                                pos_of_the_line[2] + 10,
                                pos_of_the_line[3] + 10,
-                               fill="black"))
+                               fill='black'))
         ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
 
 
 def ball_move():
     global ball, ball_movement, width, height, player, list_of_boxes,\
            enemy, no_walls, no_limit_bullets
-    if not no_limit_bullets:
-        if len(ball) == 3:
-            main_window.unbind('<Motion>')
     for i in range(0, len(ball)):
         i_coords = canvas.coords(ball[i])
         if i_coords[2] >= width:
@@ -486,6 +473,7 @@ def ball_move():
         if not no_walls:
             if len(list_of_boxes) != 0:
                 for j in range(len(list_of_boxes)):
+                    total_hit = ''
                     box_coords = canvas.coords(list_of_boxes[j])
                     if (i_coords[0] > box_coords[0] and i_coords[0] <
                         box_coords[2]) or (
@@ -495,10 +483,13 @@ def ball_move():
                         if (i_coords[1] <= box_coords[3]) and (
                                 i_coords[3] >= box_coords[3]):
                             ball_movement[i][1] = - ball_movement[i][1]
+                            print('HIT Y')
+                            total_hit += 'Y'
                         elif (i_coords[3] >= box_coords[1]) and (
                                 i_coords[1] <= box_coords[1]):
                             ball_movement[i][1] = - ball_movement[i][1]
-
+                            print('HIT Y')
+                            total_hit += 'Y'
                     if (i_coords[1] > box_coords[1] and i_coords[1] <
                         box_coords[3]) or (
                             i_coords[3] > box_coords[1] and i_coords[3] <
@@ -506,10 +497,20 @@ def ball_move():
                         if (i_coords[0] <= box_coords[2]) and (
                                 i_coords[2] >= box_coords[2]):
                             ball_movement[i][0] = - ball_movement[i][0]
+                            print('HIT X')
+                            total_hit += 'X'
                         elif (i_coords[2] >= box_coords[0]) and (
                                 i_coords[0] <= box_coords[0]):
                             ball_movement[i][0] = - ball_movement[i][0]
-
+                            print('HIT X')
+                            total_hit += 'X'
+                    # if total_hit == 'YX':
+                    #     ball_movement[i][1] = - ball_movement[i][1]
+                    #     print('HIT YX')
+                    # if total_hit == 'XY':
+                    #     ball_movement[i][0] = - ball_movement[i][0]
+                    #     print('HIT XY')
+                    total_hit = ''
         canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
 
 
@@ -577,23 +578,6 @@ def enemy_hit_box():
 
 def place_player(grid):
     global player_box, player, aim_line, idle, current_player_img
-    # player_box = random.randint(0, len(grid) - 1)
-    # rec_size_x = current_player_img.width()+50
-    # rec_size_y = current_player_img.height()+50
-    # # generate point to place the box
-    # # x coords
-    # point_x = random.uniform(grid[player_box][0], grid[player_box][2])+50
-    # point_x2 = point_x + rec_size_x
-    # while point_x2 >= grid[player_box][2]:
-    #     point_x = random.uniform(grid[player_box][0], grid[player_box][2]) +50
-    #     point_x2 = point_x + rec_size_x
-    # # generate y coords
-    # point_y = random.uniform(grid[player_box][1], grid[player_box][3]) +50
-    # point_y2 = point_y + rec_size_y
-    # while point_y2 >= grid[player_box][3]:
-    #     point_y = random.uniform(grid[player_box][1], grid[player_box][3])+50
-    #     point_y2 = point_y + rec_size_y
-    # player = canvas.create_image(point_x, point_y, anchor="nw", image=idle)
     player_box = random.randint(0, len(grid)-1)
     print(player_box)
     size_x = (grid[player_box][2] - grid[player_box][0]) / 2
@@ -602,6 +586,8 @@ def place_player(grid):
                                  grid[player_box][1]+size_y,
                                  anchor='nw', image=idle)
     aim_line = canvas.create_line(0, width * 0.1, height * 0.1, 0)
+    canvas.move(player, -current_player_img.width()/2,
+                -current_player_img.height()/2)
     rect_coords = player_hit_box()
     mid_rect = (rect_coords[1] + rect_coords[3]) * 0.5
     canvas.coords(aim_line, rect_coords[2], mid_rect, rect_coords[2] + 50,
@@ -629,11 +615,11 @@ def place_enemy(grid, level):
     while point_y2 >= grid[enemy_box][3]:
         point_y = random.uniform(grid[enemy_box][1], grid[enemy_box][3])
         point_y2 = point_y + rec_size_y
-    enemy = canvas.create_image(point_x, point_y, anchor="nw", image=enemy_img)
+    enemy = canvas.create_image(point_x, point_y, anchor='nw', image=enemy_img)
 
 
 def check_placement(grid, enemy_box, player_box):
-    # print("enemy", str(enemy_box), "player", str(player_box))
+    # print('enemy', str(enemy_box), 'player', str(player_box))
     if grid[enemy_box][0] == grid[player_box][2] and \
             grid[enemy_box][1] == grid[player_box][3]:
         return True
@@ -699,7 +685,7 @@ def generated_areas(list_of_grid):
                 size_y = random.uniform(0, y1 - rand_y)
             generated_boxes.append(
                 canvas.create_rectangle(rand_x, rand_y, rand_x + size_x,
-                                        rand_y + size_y, fill="red"))
+                                        rand_y + size_y, fill='#6cc8d4'))
     return generated_boxes
 
 
@@ -746,7 +732,7 @@ def game_set_up():
 
 
 def game_play():
-    global main_window, pause, lives
+    global main_window, pause, lives, ball
     while lives != 0:
         empty_game_lists()
         game_set_up()
@@ -787,11 +773,11 @@ def game_play():
                 if lives == 0:
                     break
                 time.sleep(0.006)
-            main_window.bind('x', unpause)
+            main_window.bind(unpause_btn, unpause)
             canvas.update()
     main_window.unbind(shoot_key)
     main_window.unbind('<Motion>')
-    messagebox.showinfo("Game lost", "You have no lives left")
+    messagebox.showinfo('Game lost', 'You have no lives left')
     leaderboard_write()
     btn_switch(2)
     main_window.mainloop()
@@ -803,8 +789,8 @@ def entry_menu():
     screen_number = 1
     no_limit_bullets = False
     no_walls = False
-    btn_width = int(width * 0.6)
-    btn_height = int(height * 0.1)
+    btn_width = 720
+    btn_height = 90
     play_btn = Button(main_window, width=btn_width, height=btn_height,
                       image=play_btn_img, command=lambda: btn_switch(7))
     play_btn.place(x=width * 0.5, y=height * 0.1, anchor='center')
@@ -836,14 +822,26 @@ def entry_menu():
 
 
 # var decleration
-unpause_started = False
+player_settings = {
+    'player_name': 'stock',
+    'level': 1,
+    'score': 0,
+    'lives': 5,
+    'shoot_key': '<Button-1>',
+    'screen_height': 900,
+    'screen_width': 1200
+}
+
+width = player_settings['screen_width']
+height = player_settings['screen_height']
+
 main_window = Tk()
-main_window.geometry(str(width) + "x" + str(height))
+main_window.geometry(str(width) + 'x' + str(height))
 # main_window.resizable(0, 0)
 screen_full = False
 screen_number = 0
-main_window.wm_attributes("-topmost", 1)
-main_window.wm_attributes("-fullscreen", False)
+main_window.wm_attributes('-topmost', 1)
+main_window.wm_attributes('-fullscreen', False)
 main_window.bind('r', fullscreen_toggle)
 grid = []
 ball = []
@@ -856,7 +854,7 @@ player_box = 0
 enemy_box = 0
 canvas = Canvas(main_window, width=width, height=height)
 level = player_settings['level']
-enemy_img = PhotoImage(file="./enemy/enemy.png")
+enemy_img = PhotoImage(file='./enemy/enemy.png')
 aim = []
 aim_f = []
 shoot_anim = []
@@ -868,41 +866,41 @@ shoot_key = player_settings['shoot_key']
 score = player_settings['score']
 lives = player_settings['lives']
 pause = False
-counter_bind = 1
+pause_label = None
 pause_btn = 'p'
+unpause_btn = 'x'
 boss_key = 'b'
-player_session_end = False
 work = PhotoImage(file='work.png')
-aim.append(PhotoImage(file="./Aim/Aim_01.png"))
-aim.append(PhotoImage(file="./Aim/Aim_02.png"))
-aim.append(PhotoImage(file="./Aim/Aim_03.png"))
-aim.append(PhotoImage(file="./Aim/Aim_04.png"))
-aim.append(PhotoImage(file="./Aim/Aim_05.png"))
-aim.append(PhotoImage(file="./Aim/Aim_06.png"))
-shoot_anim.append(PhotoImage(file="./Shoot/Shoot_01.png"))
-shoot_anim.append(PhotoImage(file="./Shoot/Shoot_02.png"))
-shoot_anim.append(PhotoImage(file="./Shoot/Shoot_03.png"))
-shoot_anim.append(PhotoImage(file="./Shoot/Shoot_04.png"))
-shoot_anim.append(PhotoImage(file="./Shoot/Shoot_05.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_01F.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_02F.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_03F.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_04F.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_05F.png"))
-aim_f.append(PhotoImage(file="./Aim/Aim_06F.png"))
-shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_01F.png"))
-shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_02F.png"))
-shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_03F.png"))
-shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_04F.png"))
-shoot_anim_f.append(PhotoImage(file="./Shoot/Shoot_05F.png"))
-idle = PhotoImage(file="./Idle/Idle_01.png")
+aim.append(PhotoImage(file='./Aim/Aim_01.png'))
+aim.append(PhotoImage(file='./Aim/Aim_02.png'))
+aim.append(PhotoImage(file='./Aim/Aim_03.png'))
+aim.append(PhotoImage(file='./Aim/Aim_04.png'))
+aim.append(PhotoImage(file='./Aim/Aim_05.png'))
+aim.append(PhotoImage(file='./Aim/Aim_06.png'))
+shoot_anim.append(PhotoImage(file='./Shoot/Shoot_01.png'))
+shoot_anim.append(PhotoImage(file='./Shoot/Shoot_02.png'))
+shoot_anim.append(PhotoImage(file='./Shoot/Shoot_03.png'))
+shoot_anim.append(PhotoImage(file='./Shoot/Shoot_04.png'))
+shoot_anim.append(PhotoImage(file='./Shoot/Shoot_05.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_01F.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_02F.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_03F.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_04F.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_05F.png'))
+aim_f.append(PhotoImage(file='./Aim/Aim_06F.png'))
+shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_01F.png'))
+shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_02F.png'))
+shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_03F.png'))
+shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_04F.png'))
+shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_05F.png'))
+idle = PhotoImage(file='./Idle/Idle_01.png')
 halt = False
-play_btn_img = PhotoImage(file="./btns/play_btn.png")
-load_btn_img = PhotoImage(file="./btns/load_btn.png")
-leaderboard_btn_img = PhotoImage(file="./btns/leaderboard_btn.png")
-resolution_btn_img = PhotoImage(file="./btns/resolution_btn.png")
-change_keys_btn_img = PhotoImage(file="./btns/change_keys_btn.png")
-quit_key_btn_img = PhotoImage(file="./btns/quit_btn.png")
+play_btn_img = PhotoImage(file='./btns/play_btn.png')
+load_btn_img = PhotoImage(file='./btns/load_btn.png')
+leaderboard_btn_img = PhotoImage(file='./btns/leaderboard_btn.png')
+resolution_btn_img = PhotoImage(file='./btns/resolution_btn.png')
+change_keys_btn_img = PhotoImage(file='./btns/change_keys_btn.png')
+quit_key_btn_img = PhotoImage(file='./btns/quit_btn.png')
 list_of_tk_items = []
 current_player_img = idle
 entry_menu()
