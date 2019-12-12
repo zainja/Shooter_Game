@@ -39,7 +39,7 @@ def update_dictionary(mode, var_to_update):
         player_info += str(player_settings[x]) + "\n"
     player_settings_file.write(player_info)
     player_settings_file.close()
-    print(player_settings)
+    # print(player_settings)
 
 
 def btn_switch(mode):
@@ -174,10 +174,16 @@ def unpause(event):
 def boss_key_start(event):
     global height, width, pause, main_window, work_scrn, pause_btn, canvas
     pause = True
-    main_window.attributes("-fullscreen", True)
-    # canvas.config(width=main_window.winfo_screenwidth,
-    #               height=main_window.winfo_screenheight)
-    work_scrn = canvas.create_rectangle(0, 0, width, height, fill='black')
+    main_window.wm_attributes("-fullscreen", True)
+    work_scrn_width = main_window.winfo_screenwidth()
+    work_scrn_height = main_window.winfo_screenheight()
+    print(work_scrn_width)
+    print(work_scrn_height)
+    canvas.configure(width=work_scrn_width,
+                     height=work_scrn_height)
+    canvas.pack()
+    work_scrn = canvas.create_image(0, 0, image=work, anchor='nw')
+    canvas.pack()
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
     main_window.unbind('x')
@@ -188,7 +194,10 @@ def boss_key_start(event):
 
 
 def boss_key_destory(event):
-    global work_scrn
+    global work_scrn, height, width, main_window, canvas
+    main_window.wm_attributes("-fullscreen", False)
+    main_window.geometry(str(width) + "x" + str(height))
+    canvas.configure(width=width, height=height)
     canvas.delete(work_scrn)
     main_window.bind('b', boss_key_start)
     main_window.bind('x', unpause)
@@ -211,7 +220,7 @@ def load_game():
     try:
         game_settings_read = open('player_settings')
         game_settings_read_items = game_settings_read.read().split()
-        print(game_settings_read_items)
+        # print(game_settings_read_items)
         if game_settings_read_items[0] == 'stock':
             enter_name()
         else:
@@ -233,7 +242,7 @@ def load_game():
                 update_dictionary(3, lives)
             main_window.geometry(str(width) + "x" + str(height))
             canvas.configure(width=width, height=height)
-            print(width)
+            # print(width)
             game_run(main_window, canvas, height, width)
     except IOError:
         messagebox.showerror('File not found', 'there is no saved games')
@@ -306,15 +315,19 @@ def restart(mode):
     game_run(main_window, canvas, height, width)
 
 
-def full_res():
-    global width
-    width = int(main_window.winfo_screenwidth() * 0.97)
-    global height
-    height = int(main_window.winfo_screenheight() * 0.92)
-    main_window.geometry(str(width) + "x" + str(height))
-    canvas.configure(width=width, height=height)
-    update_dictionary(5, height)
-    update_dictionary(6, width)
+def fullscreen_toggle(event):
+    global screen_full, main_window, canvas, height, width
+    if not screen_full:
+        screen_full = True
+        main_window.wm_attributes("-fullscreen", True)
+        main_window.winfo_screenwidth()
+        main_window.winfo_screenheight()
+        canvas.configure(width=main_window.winfo_screenwidth(),
+                         height=main_window.winfo_screenheight())
+    else:
+        screen_full = False
+        main_window.wm_attributes("-fullscreen", False)
+        canvas.configure(width=width, height=height)
 
 
 def mid_res():
@@ -587,7 +600,6 @@ def place_enemy(grid, level):
     enemy_box = player_box
     while enemy_box == player_box:
         enemy_box = random.randint(0, len(grid) - 1)
-    print(grid[enemy_box])
     if level >= 3:
         while check_placement(grid, enemy_box, player_box):
             enemy_box = random.randint(0, len(grid) - 1)
@@ -606,7 +618,7 @@ def place_enemy(grid, level):
 
 
 def check_placement(grid, enemy_box, player_box):
-    print("enemy", str(enemy_box), "player", str(player_box))
+    # print("enemy", str(enemy_box), "player", str(player_box))
     if grid[enemy_box][0] == grid[player_box][2] and \
             grid[enemy_box][1] == grid[player_box][3]:
         return True
@@ -764,8 +776,11 @@ def entry_menu():
 # var decleration
 main_window = Tk()
 main_window.geometry(str(width) + "x" + str(height))
-main_window.resizable(0, 0)
+# main_window.resizable(0, 0)
+screen_full = False
 main_window.wm_attributes("-topmost", 1)
+main_window.wm_attributes("-fullscreen", False)
+main_window.bind('r', fullscreen_toggle)
 grid = []
 ball = []
 list_of_boxes = []
@@ -793,6 +808,7 @@ counter_bind = 1
 pause_btn = 'p'
 boss_key = 'b'
 player_session_end = False
+work = PhotoImage(file='work.png')
 aim.append(PhotoImage(file="./Aim/Aim_01.png"))
 aim.append(PhotoImage(file="./Aim/Aim_02.png"))
 aim.append(PhotoImage(file="./Aim/Aim_03.png"))
