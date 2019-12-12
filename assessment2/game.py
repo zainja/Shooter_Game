@@ -161,6 +161,7 @@ def pause_game(event):
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
     main_window.unbind(pause_btn)
+    main_window.bind(unpause_btn, unpause)
     main_window.unbind('nowall')
     main_window.unbind('limits')
 
@@ -175,6 +176,7 @@ def unpause(event):
     main_window.bind(boss_key, boss_key_start)
     main_window.bind(pause_btn, pause_game)
     main_window.bind('nowall', no_walls)
+    main_window.unbind(unpause_btn)
     main_window.bind('limits', no_limit_bullets)
     wait_label = canvas.create_text(width/2, height/2, text='3',
                                     font='fixedsys 30')
@@ -208,6 +210,7 @@ def boss_key_start(event):
     main_window.unbind('nowall')
     main_window.unbind('limits')
     main_window.unbind(pause_btn)
+    main_window.unbind('TAB')
     main_window.bind('b', boss_key_destroy)
 
 
@@ -789,7 +792,6 @@ def game_play():
                 if lives == 0:
                     break
                 time.sleep(0.006)
-            main_window.bind(unpause_btn, unpause)
             canvas.update()
     main_window.unbind(shoot_key)
     main_window.unbind('<Motion>')
