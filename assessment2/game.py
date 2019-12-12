@@ -85,12 +85,15 @@ def enter_name():
 
 
 def update_name(name):
+    global list_of_tk_items
     if name == '':
         messagebox.showerror('Entry Error', 'Enter a name ')
     else:
         empty_game_lists()
         update_dictionary(0, name)
-        btn_switch(0)
+        for items in list_of_tk_items:
+            items.destroy()
+        restart(0)
 
 
 def resolution_change():
@@ -141,7 +144,6 @@ def pause_game(event):
     main_window.unbind(pause_btn)
     main_window.unbind('nowall')
     main_window.unbind('limits')
-    main_window.bind('x', unpause)
 
 
 def unpause(event):
@@ -310,8 +312,6 @@ def restart(mode):
         update_dictionary(2, score)
         lives = 5
         update_dictionary(3, lives)
-        messagebox.showwarning('Be ware!',
-                               'progress will be lost if you restart')
     empty_game_lists()
     game_play()
 
@@ -732,8 +732,8 @@ def game_set_up():
 
 
 def game_play():
-    game_set_up()
     global main_window, pause
+    game_set_up()
     main_window.bind('<Motion>', mouse_movement)
     main_window.bind(shoot_key, shoot)
     main_window.bind(pause_btn, pause_game)
@@ -741,22 +741,23 @@ def game_play():
     main_window.bind('nowall', cheat_no_walls)
     main_window.bind('limits', unlimted_bullets)
     canvas.pack()
-    while not pause:
-        ball_move()
-        if ball_move() == 1:
-            player_lost()
-        if ball_move() == 2:
-            player_won()
-        if lives == 0:
-            # halt = True
-            main_window.unbind(shoot_key)
-            main_window.unbind('<Motion>')
-            messagebox.showinfo("Game lost", "You have no lives left")
-            leaderboard_write()
-            btn_switch(2)
-            break
-        time.sleep(0.008)
+    while True:
+        if not pause:
+            ball_move()
+            if ball_move() == 1:
+                player_lost()
+            if ball_move() == 2:
+                player_won()
+            if lives == 0:
+                break
+            time.sleep(0.006)
+        main_window.bind('x', unpause)
         canvas.update()
+    main_window.unbind(shoot_key)
+    main_window.unbind('<Motion>')
+    messagebox.showinfo("Game lost", "You have no lives left")
+    leaderboard_write()
+    btn_switch(2)
     main_window.mainloop()
 
 
@@ -799,6 +800,7 @@ def entry_menu():
 
 
 # var decleration
+unpause_started = False
 main_window = Tk()
 main_window.geometry(str(width) + "x" + str(height))
 # main_window.resizable(0, 0)
