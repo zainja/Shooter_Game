@@ -3,6 +3,7 @@ from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label, \
 import math
 import time
 import random
+import re
 
 player_settings = {
     'player_name': "stock",
@@ -43,9 +44,9 @@ def update_dictionary(mode, var_to_update):
 
 
 def btn_switch(mode):
-    global main_window, canvas, height, width, list_of_btns, canvas, pause
+    global main_window, canvas, height, width, list_of_tk_items, canvas, pause
     canvas.delete('all')
-    for items in list_of_btns:
+    for items in list_of_tk_items:
         items.destroy()
     if mode == 0:
         game_run(main_window, canvas, height, width)
@@ -68,7 +69,7 @@ def btn_switch(mode):
 
 
 def enter_name():
-    global main_window, width, list_of_btns, halt
+    global main_window, width, list_of_tk_items, halt
     halt = False
     label_enter_name = Label(main_window, text="Enter a Name",
                              font=('Times new roman', 25))
@@ -78,9 +79,9 @@ def enter_name():
     confirm_btn = Button(text='start',
                          command=lambda: update_name(entry_name.get()))
     confirm_btn.place(relx=0.5, rely=0.7, anchor='center')
-    list_of_btns.append(label_enter_name)
-    list_of_btns.append(entry_name)
-    list_of_btns.append(confirm_btn)
+    list_of_tk_items.append(label_enter_name)
+    list_of_tk_items.append(entry_name)
+    list_of_tk_items.append(confirm_btn)
 
 
 def update_name(name):
@@ -93,12 +94,9 @@ def update_name(name):
 
 
 def resolution_change():
-    global width, height, main_window, list_of_btns
+    global width, height, main_window, list_of_tk_items
     btn_width = int(width * 0.6)
     btn_height = int(height * 0.1)
-    full_screen_btn = Button(main_window, width=btn_width, height=btn_height,
-                             image=play_btn_img, command=lambda: full_res())
-    full_screen_btn.place(x=width * 0.03, y=height * 0.1)
     mid_res_btn = Button(main_window, width=btn_width, height=btn_height,
                          image=load_btn_img, command=lambda: mid_res())
     mid_res_btn.place(x=width * 0.03, y=height * 0.25)
@@ -110,24 +108,23 @@ def resolution_change():
                       image=resolution_btn_img,
                       command=lambda: btn_switch(6))
     back_btn.place(x=width * 0.03, y=height * 0.55)
-    list_of_btns.append(full_screen_btn)
-    list_of_btns.append(mid_res_btn)
-    list_of_btns.append(small_res_btn)
-    list_of_btns.append(back_btn)
+    list_of_tk_items.append(mid_res_btn)
+    list_of_tk_items.append(small_res_btn)
+    list_of_tk_items.append(back_btn)
 
 
 def change_binding():
-    global main_window, list_of_btns
+    global main_window, list_of_tk_items
     label_info_bind = Label(main_window,
                             text="Press any key to change it to the shooting key",
                             font=("Times new roman", 25))
     label_info_bind.place(relx=0.1, rely=0.5)
-    list_of_btns.append(label_info_bind)
+    list_of_tk_items.append(label_info_bind)
     main_window.bind('<Key>', bind_new_key)
 
 
 def bind_new_key(event):
-    global shoot_key, main_window, list_of_btns
+    global shoot_key, main_window, list_of_tk_items
     shoot_key = '<' + event.keysym + '>'
     update_dictionary(4, shoot_key)
     info_key = "key choosen was " + event.keysym
@@ -250,22 +247,25 @@ def load_game():
 
 
 def leaderboard_read():
-    global canvas, main_window, width, height, list_of_btns
-    canvas.create_text(width * 0.5, height * 0.1, font="Times 20 italic bold",
-                       text='level_txt', anchor="center")
+    global canvas, main_window, width, height, list_of_tk_items
+    canvas.create_text(width * 0.5, height * 0.1,
+                       font="Times 20 italic bold",
+                       text='LEADERBOARD', anchor="center")
     back_btn = Button(main_window, text='back', command=lambda: btn_switch(6))
     back_btn.place(relx=0.3, rely=0.1, anchor='center')
-    list_of_btns.append(back_btn)
+    list_of_tk_items.append(back_btn)
     canvas.pack()
 
     try:
         y = height * 0.2
         read_leaderboard = open('leaderboard')
         read_leaderboard_list = read_leaderboard.read().split('\n')
-        for entries in read_leaderboard_list:
-            canvas.create_text(width * 0.5, y, text=entries,
+        for entries in range(0, len(read_leaderboard_list)-1, 1):
+            canvas.create_text(width * 0.5, y,
+                               text=read_leaderboard_list[entries],
                                font='Times 20 italic bold', anchor='center')
             y += height * 0.2
+        canvas.pack()
         read_leaderboard.close()
     except IOError:
         messagebox.showerror('File not found', 'there is no previous games')
@@ -310,24 +310,41 @@ def restart(mode):
         update_dictionary(2, score)
         lives = 5
         update_dictionary(3, lives)
-
+        messagebox.showwarning('Be ware!',
+                               'progress will be lost if you restart')
     empty_game_lists()
     game_run(main_window, canvas, height, width)
 
 
 def fullscreen_toggle(event):
-    global screen_full, main_window, canvas, height, width
+    global screen_full, main_window, canvas, height, width, screen_number, \
+           player_settings
     if not screen_full:
         screen_full = True
         main_window.wm_attributes("-fullscreen", True)
-        main_window.winfo_screenwidth()
-        main_window.winfo_screenheight()
+        width = main_window.winfo_screenwidth()
+        height = main_window.winfo_screenheight()
         canvas.configure(width=main_window.winfo_screenwidth(),
                          height=main_window.winfo_screenheight())
+        canvas.pack()
+        if screen_number == 1:
+            btn_switch(6)
+
+        if screen_number == 2:
+            empty_game_lists()
+            game_run(main_window, canvas, height, width)
     else:
         screen_full = False
         main_window.wm_attributes("-fullscreen", False)
+        width = int(player_settings['screen_width'])
+        height = int(player_settings['screen_height'])
         canvas.configure(width=width, height=height)
+        if screen_number == 1:
+            btn_switch(6)
+
+        if screen_number == 2:
+            empty_game_lists()
+            game_run(main_window, canvas, height, width)
 
 
 def mid_res():
@@ -689,7 +706,9 @@ def generated_areas(list_of_grid):
 
 
 def game_run(window, canvas, height, width):
-    global list_of_boxes, shoot_key, pause, pause_btn, halt, player_session_end
+    global list_of_boxes, shoot_key, pause, pause_btn, halt,\
+           player_session_end, screen_number, list_of_tk_items
+    screen_number = 2
     if player_session_end and halt:
         halt = True
         main_window.unbind(shoot_key)
@@ -712,6 +731,10 @@ def game_run(window, canvas, height, width):
         canvas.create_text(score_x_pos, score_y_pos,
                            font="Times 20 italic bold",
                            text=score_txt, anchor="nw")
+        restart_btn = Button(main_window, text='restart', width=4, height=2,
+                             command=lambda: restart(0))
+        restart_btn.place(relx=0.9, rely=0.05, anchor='center')
+        list_of_tk_items.append(restart_btn)
         if level == 1:
             total = 2
         if level == 2:
@@ -737,8 +760,9 @@ def game_run(window, canvas, height, width):
 
 
 def entry_menu():
-    global main_window, height, width, canvas, height, width, list_of_btns, \
-           no_limit_bullets, no_walls
+    global main_window, height, width, canvas, height, width, list_of_tk_items, \
+           no_limit_bullets, no_walls, screen_number
+    screen_number = 1
     no_limit_bullets = False
     no_walls = False
     btn_width = int(width * 0.6)
@@ -765,12 +789,12 @@ def entry_menu():
                           image=quit_key_btn_img,
                           command=lambda: btn_switch(5))
     quit_key_btn.place(x=width * 0.5, y=height * 0.85, anchor='center')
-    list_of_btns.append(play_btn)
-    list_of_btns.append(load_game_btn)
-    list_of_btns.append(leaderboard_btn)
-    list_of_btns.append(resoloution_btn)
-    list_of_btns.append(change_keys_btn)
-    list_of_btns.append(quit_key_btn)
+    list_of_tk_items.append(play_btn)
+    list_of_tk_items.append(load_game_btn)
+    list_of_tk_items.append(leaderboard_btn)
+    list_of_tk_items.append(resoloution_btn)
+    list_of_tk_items.append(change_keys_btn)
+    list_of_tk_items.append(quit_key_btn)
 
 
 # var decleration
@@ -778,6 +802,7 @@ main_window = Tk()
 main_window.geometry(str(width) + "x" + str(height))
 # main_window.resizable(0, 0)
 screen_full = False
+screen_number = 0
 main_window.wm_attributes("-topmost", 1)
 main_window.wm_attributes("-fullscreen", False)
 main_window.bind('r', fullscreen_toggle)
@@ -839,7 +864,7 @@ leaderboard_btn_img = PhotoImage(file="./btns/leaderboard_btn.png")
 resolution_btn_img = PhotoImage(file="./btns/resolution_btn.png")
 change_keys_btn_img = PhotoImage(file="./btns/change_keys_btn.png")
 quit_key_btn_img = PhotoImage(file="./btns/quit_btn.png")
-list_of_btns = []
+list_of_tk_items = []
 current_player_img = idle
 entry_menu()
 main_window.mainloop()
