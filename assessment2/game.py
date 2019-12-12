@@ -49,7 +49,7 @@ def btn_switch(mode):
     for items in list_of_tk_items:
         items.destroy()
     if mode == 0:
-        game_run(main_window, canvas, height, width)
+        game_play()
     if mode == 1:
         load_game()
     if mode == 2:
@@ -165,7 +165,7 @@ def unpause(event):
     canvas.update()
     time.sleep(1)
     canvas.delete(wait_label)
-    ball_move()
+    # ball_move()
 
 
 def boss_key_start(event):
@@ -240,7 +240,7 @@ def load_game():
             main_window.geometry(str(width) + "x" + str(height))
             canvas.configure(width=width, height=height)
             # print(width)
-            game_run(main_window, canvas, height, width)
+            game_play()
     except IOError:
         messagebox.showerror('File not found', 'there is no saved games')
         btn_switch(6)
@@ -313,7 +313,7 @@ def restart(mode):
         messagebox.showwarning('Be ware!',
                                'progress will be lost if you restart')
     empty_game_lists()
-    game_run(main_window, canvas, height, width)
+    game_play()
 
 
 def fullscreen_toggle(event):
@@ -332,7 +332,7 @@ def fullscreen_toggle(event):
 
         if screen_number == 2:
             empty_game_lists()
-            game_run(main_window, canvas, height, width)
+            game_play()
     else:
         screen_full = False
         main_window.wm_attributes("-fullscreen", False)
@@ -344,7 +344,7 @@ def fullscreen_toggle(event):
 
         if screen_number == 2:
             empty_game_lists()
-            game_run(main_window, canvas, height, width)
+            game_play()
 
 
 def mid_res():
@@ -388,13 +388,8 @@ def player_lost():
         level = 1
     update_dictionary(1, level)
     update_dictionary(3, lives)
-    if lives == 0:
-        player_session_end = True
-        halt = True
-        restart(1)
-    else:
-        messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
-        restart(1)
+    messagebox.showinfo("LOST YA BASIC", "YOU LOOOOOOOOSEEE")
+    restart(1)
 
 
 def mouse_movement(event):
@@ -466,60 +461,54 @@ def shoot(event):
                                pos_of_the_line[3] + 10,
                                fill="yellow"))
         ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
-        ball_move()
 
 
 def ball_move():
-    global ball, ball_movement, width, height, player, list_of_boxes, \
-        enemy, shoot_key, pause, lives, no_limit_bullets, no_walls
-    if not no_limit_bullets:
-        if len(ball) >= 3:
-            main_window.unbind(shoot_key)
-    while not pause:
-        for i in range(0, len(ball)):
-            i_coords = canvas.coords(ball[i])
-            if i_coords[2] >= width:
-                ball_movement[i][0] = - ball_movement[i][0]
-            if i_coords[0] <= 0:
-                ball_movement[i][0] = - ball_movement[i][0]
-            if i_coords[3] >= height:
-                ball_movement[i][1] = - ball_movement[i][1]
-            if i_coords[1] <= 0.1 * height:
-                ball_movement[i][1] = - ball_movement[i][1]
-            if ball_hits_object(ball[i], player):
-                player_lost()
-            if ball_hits_object(ball[i], enemy):
-                player_won()
-            if not no_walls:
-                if len(list_of_boxes) != 0:
-                    for j in range(len(list_of_boxes)):
-                        box_coords = canvas.coords(list_of_boxes[j])
-                        if (i_coords[0] > box_coords[0] and i_coords[0] <
-                            box_coords[2]) or (
-                                i_coords[2] > box_coords[0] and i_coords[2] <
-                                box_coords[2]):
-                            # coming from left side
-                            if (i_coords[1] <= box_coords[3]) and (
-                                    i_coords[3] >= box_coords[3]):
-                                ball_movement[i][1] = - ball_movement[i][1]
-                            elif (i_coords[3] >= box_coords[1]) and (
-                                    i_coords[1] <= box_coords[1]):
-                                ball_movement[i][1] = - ball_movement[i][1]
+    global ball, ball_movement, width, height, player, list_of_boxes,\
+           enemy, no_walls
 
-                        if (i_coords[1] > box_coords[1] and i_coords[1] <
-                            box_coords[3]) or (
-                                i_coords[3] > box_coords[1] and i_coords[3] <
-                                box_coords[3]):
-                            if (i_coords[0] <= box_coords[2]) and (
-                                    i_coords[2] >= box_coords[2]):
-                                ball_movement[i][0] = - ball_movement[i][0]
-                            elif (i_coords[2] >= box_coords[0]) and (
-                                    i_coords[0] <= box_coords[0]):
-                                ball_movement[i][0] = - ball_movement[i][0]
-            canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
-        canvas.update()
-        time.sleep(0.001)
-    canvas.update()
+    for i in range(0, len(ball)):
+        i_coords = canvas.coords(ball[i])
+        if i_coords[2] >= width:
+            ball_movement[i][0] = - ball_movement[i][0]
+        if i_coords[0] <= 0:
+            ball_movement[i][0] = - ball_movement[i][0]
+        if i_coords[3] >= height:
+            ball_movement[i][1] = - ball_movement[i][1]
+        if i_coords[1] <= 0.1 * height:
+            ball_movement[i][1] = - ball_movement[i][1]
+        if ball_hits_object(ball[i], player):
+            return 1
+        if ball_hits_object(ball[i], enemy):
+            return 2
+        if not no_walls:
+            if len(list_of_boxes) != 0:
+                for j in range(len(list_of_boxes)):
+                    box_coords = canvas.coords(list_of_boxes[j])
+                    if (i_coords[0] > box_coords[0] and i_coords[0] <
+                        box_coords[2]) or (
+                            i_coords[2] > box_coords[0] and i_coords[2] <
+                            box_coords[2]):
+                        # coming from left side
+                        if (i_coords[1] <= box_coords[3]) and (
+                                i_coords[3] >= box_coords[3]):
+                            ball_movement[i][1] = - ball_movement[i][1]
+                        elif (i_coords[3] >= box_coords[1]) and (
+                                i_coords[1] <= box_coords[1]):
+                            ball_movement[i][1] = - ball_movement[i][1]
+
+                    if (i_coords[1] > box_coords[1] and i_coords[1] <
+                        box_coords[3]) or (
+                            i_coords[3] > box_coords[1] and i_coords[3] <
+                            box_coords[3]):
+                        if (i_coords[0] <= box_coords[2]) and (
+                                i_coords[2] >= box_coords[2]):
+                            ball_movement[i][0] = - ball_movement[i][0]
+                        elif (i_coords[2] >= box_coords[0]) and (
+                                i_coords[0] <= box_coords[0]):
+                            ball_movement[i][0] = - ball_movement[i][0]
+
+        canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
 
 
 def ball_hits_object(i, j):
@@ -705,62 +694,74 @@ def generated_areas(list_of_grid):
     return generated_boxes
 
 
-def game_run(window, canvas, height, width):
-    global list_of_boxes, shoot_key, pause, pause_btn, halt,\
-           player_session_end, screen_number, list_of_tk_items
+def game_set_up():
+    global screen_number, canvas, level, score, width, height, list_of_boxes
     screen_number = 2
-    if player_session_end and halt:
-        halt = True
-        main_window.unbind(shoot_key)
-        main_window.unbind('<Motion>')
-        messagebox.showinfo("Game lost", "You have no lives left")
-        leaderboard_write()
-        btn_switch(2)
-    if not halt:
-        total = 0
-        level_x_pos = int(width * 0.05)
-        level_y_pos = int((0.1 * height) / 3)
-        score_x_pos = width * 0.2
-        score_y_pos = level_y_pos
-        level_txt = "level: " + str(level)
-        score_txt = "score: " + str(score)
-        canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
-        canvas.create_text(level_x_pos, level_y_pos,
-                           font="Times 20 italic bold",
-                           text=level_txt, anchor="nw")
-        canvas.create_text(score_x_pos, score_y_pos,
-                           font="Times 20 italic bold",
-                           text=score_txt, anchor="nw")
-        restart_btn = Button(main_window, text='restart', width=4, height=2,
-                             command=lambda: restart(0))
-        restart_btn.place(relx=0.9, rely=0.05, anchor='center')
-        list_of_tk_items.append(restart_btn)
-        if level == 1:
-            total = 2
-        if level == 2:
-            total = 3
-        if level == 3:
-            total = 4
-        if level >= 4:
-            total = 5
-        grid = create_grid(height, width, total)
-        for i in grid:
-            canvas.create_rectangle(i)
-        place_player(grid)
-        place_enemy(grid, level)
-        list_of_boxes = generated_areas(grid)
-        main_window.bind('<Motion>', mouse_movement)
-        main_window.bind(shoot_key, shoot)
-        main_window.bind(pause_btn, pause_game)
-        main_window.bind(boss_key, boss_key_start)
-        main_window.bind('nowall', cheat_no_walls)
-        main_window.bind('limits', unlimted_bullets)
-        canvas.pack()
-        window.mainloop()
+    total = 0
+    level_x_pos = int(width * 0.05)
+    level_y_pos = int((0.1 * height) / 3)
+    score_x_pos = width * 0.2
+    score_y_pos = level_y_pos
+    level_txt = "level: " + str(level)
+    score_txt = "score: " + str(score)
+    canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
+    canvas.create_text(level_x_pos, level_y_pos,
+                       font="Times 20 italic bold",
+                       text=level_txt, anchor="nw")
+    canvas.create_text(score_x_pos, score_y_pos,
+                       font="Times 20 italic bold",
+                       text=score_txt, anchor="nw")
+    restart_btn = Button(main_window, text='restart', width=4, height=2,
+                         command=lambda: restart(0))
+    restart_btn.place(relx=0.9, rely=0.05, anchor='center')
+    list_of_tk_items.append(restart_btn)
+    if level == 1:
+        total = 2
+    if level == 2:
+        total = 3
+    if level == 3:
+        total = 4
+    if level >= 4:
+        total = 5
+    grid = create_grid(height, width, total)
+    for i in grid:
+        canvas.create_rectangle(i)
+    place_player(grid)
+    place_enemy(grid, level)
+    list_of_boxes = generated_areas(grid)
+
+
+def game_play():
+    game_set_up()
+    global main_window, pause
+    main_window.bind('<Motion>', mouse_movement)
+    main_window.bind(shoot_key, shoot)
+    main_window.bind(pause_btn, pause_game)
+    main_window.bind(boss_key, boss_key_start)
+    main_window.bind('nowall', cheat_no_walls)
+    main_window.bind('limits', unlimted_bullets)
+    canvas.pack()
+    while not pause:
+        ball_move()
+        if ball_move() == 1:
+            player_lost()
+        if ball_move() == 2:
+            player_won()
+        if lives == 0:
+            # halt = True
+            main_window.unbind(shoot_key)
+            main_window.unbind('<Motion>')
+            messagebox.showinfo("Game lost", "You have no lives left")
+            leaderboard_write()
+            btn_switch(2)
+            break
+        time.sleep(0.008)
+        canvas.update()
+    main_window.mainloop()
 
 
 def entry_menu():
-    global main_window, height, width, canvas, height, width, list_of_tk_items, \
+    global main_window, height, width, canvas, height, width, list_of_tk_items,\
            no_limit_bullets, no_walls, screen_number
     screen_number = 1
     no_limit_bullets = False
