@@ -704,22 +704,27 @@ def generated_areas(list_of_grid):
 
 
 def game_set_up():
-    global screen_number, canvas, level, score, width, height, list_of_boxes
+    global screen_number, canvas, level, score, width, height, list_of_boxes,\
+           lives
     screen_number = 2
     total = 0
     level_x_pos = int(width * 0.05)
-    level_y_pos = int((0.1 * height) / 3)
-    score_x_pos = width * 0.2
-    score_y_pos = level_y_pos
-    level_txt = "level: " + str(level)
-    score_txt = "score: " + str(score)
-    canvas.create_rectangle(0, 0, width, height * 0.1, fill="red")
-    canvas.create_text(level_x_pos, level_y_pos,
-                       font="Times 20 italic bold",
-                       text=level_txt, anchor="nw")
-    canvas.create_text(score_x_pos, score_y_pos,
-                       font="Times 20 italic bold",
-                       text=score_txt, anchor="nw")
+    labels_y_pos = int((0.1 * height) / 3)
+    score_x_pos = int(width * 0.15)
+    lives_x_pos = int(width * 0.3)
+    level_txt = 'level: ' + str(level)
+    score_txt = 'score: ' + str(score)
+    lives_text = 'lives: ' + str(lives)
+    canvas.create_rectangle(0, 0, width, height * 0.1, fill='red')
+    canvas.create_text(level_x_pos, labels_y_pos,
+                       font='Times 20 bold',
+                       text=level_txt, anchor='nw')
+    canvas.create_text(score_x_pos, labels_y_pos,
+                       font='Times 20 bold',
+                       text=score_txt, anchor='nw')
+    canvas.create_text(lives_x_pos, labels_y_pos,
+                       font='Times 20 bold',
+                       text=lives_text, anchor='nw')
     restart_btn = Button(main_window, text='restart', width=4, height=2,
                          command=lambda: restart(0))
     restart_btn.place(relx=0.9, rely=0.05, anchor='center')
