@@ -1,9 +1,9 @@
-from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label, \
-    Entry
 import math
-import time
 import random
 import re
+import time
+from tkinter import Tk, Canvas, messagebox, PhotoImage, Button, Label, Entry
+
 
 # Created by Zain Alden Jaffal uni id 10344889
 # Shooting is a shooter game were you have to hit the target in a randomly
@@ -50,7 +50,7 @@ def update_dictionary(mode, var_to_update):
 # destroy the previous screens' items
 def btn_switch(mode):
     global main_window, canvas, height, width, list_of_tk_items, canvas, \
-        pause, screen_number, default_canvas_color, shoot_key, pause_btn,\
+        pause, screen_number, default_canvas_color, shoot_key, pause_btn, \
         boss_key, unpause_btn, quitting, list_of_bound_btns
     pause = False
     main_window.unbind(shoot_key)
@@ -285,8 +285,8 @@ def boss_key_start(event):
 
 # stops boss key mode and returns back to bind everything
 def boss_key_destroy(event):
-    global work_scrn, height, width, main_window, canvas, fullscreen_btn,\
-           list_of_tk_items
+    global work_scrn, height, width, main_window, canvas, fullscreen_btn, \
+        list_of_tk_items
     if not screen_full:
         main_window.wm_attributes('-fullscreen', False)
     restart_btn = Button(canvas, text='restart', width=4, height=2,
@@ -420,15 +420,15 @@ def leaderboard_read():
         for i in range(0, len(read_leaderboard_list) - 1):
             x = read_leaderboard_list[i].split()
             name = ''
-            for i in range(0, len(x)-1):
+            for i in range(0, len(x) - 1):
                 name += x[i]
-            read_list.append([name, int(x[len(x)-1])])
+            read_list.append([name, int(x[len(x) - 1])])
         read_list = sorted(read_list, key=lambda x: x[1], reverse=True)
         max_board = len(read_list)
         if max_board > 8:
             max_board = 8
         for entries in range(0, max_board):
-            place = str(entries+1)+'th'
+            place = str(entries + 1) + 'th'
             if entries == 0:
                 place = '1st'
             if entries == 1:
@@ -437,10 +437,11 @@ def leaderboard_read():
                 place = '3rd'
 
             canvas.create_text(width * 0.1, y,
-                               text=place+". " + read_list[entries][0].upper(),
+                               text=place + ". " + read_list[entries][
+                                   0].upper(),
                                font='Times 20 italic bold', anchor='nw')
-            canvas.create_line(width*0.275, y+20, width * 0.78,
-                               y+20, dash=(4, 4), width=3)
+            canvas.create_line(width * 0.275, y + 20, width * 0.78,
+                               y + 20, dash=(4, 4), width=3)
             canvas.create_text(width * 0.8, y,
                                text=int(read_list[entries][1]),
                                font='Times 20 italic bold', anchor='nw')
@@ -449,7 +450,7 @@ def leaderboard_read():
         read_leaderboard.close()
         if game_ended:
             play_again = Button(main_window, image=play_agian_btn,
-                              command=lambda: btn_switch(7))
+                                command=lambda: btn_switch(7))
             play_again.place(relx=0.3, rely=0.95, anchor='center')
             list_of_tk_items.append(play_again)
             game_ended = False
@@ -880,7 +881,7 @@ def generated_areas(list_of_grid):
 # update counters and increase the complexity
 def game_set_up():
     global screen_number, canvas, level, score, width, height, list_of_boxes, \
-           lives, list_of_tk_items, quitting
+        lives, list_of_tk_items, quitting
     if not quitting:
         total = 0
         level_x_pos = int(width * 0.02)
@@ -917,8 +918,6 @@ def game_set_up():
         if level >= 4:
             total = 5
         grid = create_grid(height, width, total)
-        for i in grid:
-            canvas.create_rectangle(i)
         place_player(grid)
         place_enemy(grid, level)
         list_of_boxes = generated_areas(grid)
@@ -1028,7 +1027,7 @@ def entry_menu():
 # intro screen
 def game_intro():
     global main_window, canvas, player_settings, intro_title, player_image, \
-           enemy_image, start_btn_img, screen_number
+        enemy_image, start_btn_img, screen_number
     screen_number = -1
     if player_settings['player_name'] != 'stock':
         welcome_label = Label(main_window, text='Welcome back ' +
@@ -1037,7 +1036,7 @@ def game_intro():
         welcome_label.place(relx=0.5, rely=0.05, anchor='center')
         save_txt = 'Your last game was saved score: ' + \
                    str(player_settings['score']) + '  level: ' + \
-                   str(player_settings['level']) + '  lives: ' +\
+                   str(player_settings['level']) + '  lives: ' + \
                    str(player_settings['lives'])
         save_label = Label(main_window, text=save_txt, font='Times 20 bold')
         save_label.place(relx=0.5, rely=0.9, anchor='center')
