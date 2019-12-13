@@ -125,7 +125,7 @@ def update_name(name):
         game_play()
 
 
-def mid_res():
+def res_one():
     global width
     width = 1200
     global height
@@ -136,7 +136,7 @@ def mid_res():
     update_dictionary(6, width)
 
 
-def small_res():
+def res_two():
     global width
     width = 1000
     global height
@@ -152,11 +152,11 @@ def resolution_change():
     btn_width = 720
     btn_height = 90
     mid_res_btn = Button(main_window, width=btn_width, height=btn_height,
-                         image=mid_res_btn_img, command=lambda: mid_res())
+                         image=mid_res_btn_img, command=lambda: res_one())
     mid_res_btn.place(relx=0.5, rely=0.25, anchor='center')
     small_res_btn = Button(main_window, width=btn_width, height=btn_height,
                            image=small_res_btn_img,
-                           command=lambda: small_res())
+                           command=lambda: res_two())
     small_res_btn.place(relx=0.5, rely=0.4, anchor='center')
     back_btn = Button(main_window, width=btn_width, height=btn_height,
                       image=back_btn_img,
@@ -537,12 +537,14 @@ def shoot(event):
         canvas.itemconfig(player, image=idle, anchor='nw')
         current_player_img = idle
 
-    ball.append(
-        canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3] - 2,
-                           pos_of_the_line[2] + 10,
-                           pos_of_the_line[3] + 10,
-                           fill='black'))
-    ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
+        ball.append(
+            canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3] - 2,
+                               pos_of_the_line[2] + 10,
+                               pos_of_the_line[3] + 10,
+                               fill='black'))
+        ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
+    else:
+        ball = []
 
 
 def ball_move():
@@ -566,10 +568,8 @@ def ball_move():
             if len(list_of_boxes) != 0:
                 for j in range(len(list_of_boxes)):
                     box_coords = canvas.coords(list_of_boxes[j])
-                    if (i_coords[0] > box_coords[0] and i_coords[0] <
-                        box_coords[2]) or (
-                            i_coords[2] > box_coords[0] and i_coords[2] <
-                            box_coords[2]):
+                    if (box_coords[0] < i_coords[0] < box_coords[2]) or (
+                            box_coords[0] < i_coords[2] < box_coords[2]):
                         # coming from left side
                         if (i_coords[1] <= box_coords[3]) and (
                                 i_coords[3] >= box_coords[3]):
@@ -577,10 +577,8 @@ def ball_move():
                         elif (i_coords[3] >= box_coords[1]) and (
                                 i_coords[1] <= box_coords[1]):
                             ball_movement[i][1] = - ball_movement[i][1]
-                    if (i_coords[1] > box_coords[1] and i_coords[1] <
-                        box_coords[3]) or (
-                            i_coords[3] > box_coords[1] and i_coords[3] <
-                            box_coords[3]):
+                    if (box_coords[1] < i_coords[1] < box_coords[3]) or (
+                            box_coords[1] < i_coords[3] < box_coords[3]):
                         if (i_coords[0] <= box_coords[2]) and (
                                 i_coords[2] >= box_coords[2]):
                             ball_movement[i][0] = - ball_movement[i][0]
@@ -598,15 +596,15 @@ def ball_hits_object(i, j):
     if j == enemy:
         box_coords = enemy_hit_box()
     # check for right and left
-    if (i_coords[1] >= box_coords[1] and i_coords[1] <= box_coords[3]) or (
-            i_coords[3] >= box_coords[1] and i_coords[3] <= box_coords[3]):
+    if (box_coords[1] <= i_coords[1] <= box_coords[3]) or (
+            box_coords[1] <= i_coords[3] <= box_coords[3]):
         # coming from left side
         if (i_coords[0] <= box_coords[2]) and (i_coords[2] >= box_coords[2]):
             return True
         elif (i_coords[2] >= box_coords[0]) and (i_coords[0] <= box_coords[0]):
             return True
-    if (i_coords[0] >= box_coords[0] and i_coords[0] <= box_coords[2]) or (
-            i_coords[2] >= box_coords[0] and i_coords[2] <= box_coords[2]):
+    if (box_coords[0] <= i_coords[0] <= box_coords[2]) or (
+            box_coords[0] <= i_coords[2] <= box_coords[2]):
         # coming from left side
         if (i_coords[1] <= box_coords[3]) and (i_coords[3] >= box_coords[3]):
             return True
@@ -773,8 +771,8 @@ def game_set_up():
         total = 0
         level_x_pos = int(width * 0.02)
         labels_y_pos = int((0.1 * height) / 3)
-        lives_x_pos = int(width * 0.1)
-        score_x_pos = int(width * 0.29)
+        lives_x_pos = int(width * 0.13)
+        score_x_pos = int(width * 0.40)
         level_txt = 'level: ' + str(level)
         lives_text = 'lives: ' + str(lives)
         score_txt = 'score: ' + str(score)
@@ -821,11 +819,11 @@ def game_play():
             game_set_up()
             bullet = 3
             if not quitting:
-                bullet_label = canvas.create_text(int(width * 0.19),
+                bullet_label = canvas.create_text(int(width * 0.23),
                                                   int((0.1 * height) / 3),
                                                   font='Times 20',
                                                   anchor='nw')
-                wall_cheat = canvas.create_text(int(width * 0.7),
+                wall_cheat = canvas.create_text(int(width * 0.6),
                                                 int((0.1 * height) / 3),
                                                 font='Times 20',
                                                 anchor='nw')
@@ -843,7 +841,8 @@ def game_play():
                 if quitting:
                     break
                 if not pause:
-                    canvas.itemconfig(bullet_label, text='bullets: ' + str(bullet))
+                    canvas.itemconfig(bullet_label,
+                                      text='bullets: ' + str(bullet))
 
                 if not no_limit_bullets:
                     if len(ball) == 3:
@@ -918,6 +917,12 @@ def game_intro():
                                                 player_settings['player_name'],
                               font='Times 20 bold')
         welcome_label.place(relx=0.5, rely=0.05, anchor='center')
+        save_txt = 'Your last game was saved score: ' + \
+                   player_settings['score'] + '  level: ' + \
+                   player_settings['level'] + '  lives: ' +\
+                   player_settings['lives']
+        save_label = Label(main_window, text=save_txt, font='Times 20 bold')
+        save_label.place(relx=0.5, rely=0.9, anchor='center')
     intro_title_label = Label(main_window, image=intro_title)
     intro_title_label.place(relx=0.5, rely=0.63, anchor='center')
     player_label = Label(main_window, image=player_image)
@@ -931,11 +936,10 @@ def game_intro():
     list_of_tk_items.append(player_label)
     list_of_tk_items.append(enemy_label)
     list_of_tk_items.append(welcome_label)
+    list_of_tk_items.append(save_label)
     list_of_tk_items.append(start_btn)
 
 # var deceleration
-
-
 player_settings = {
     'player_name': 'stock',
     'level': 1,
