@@ -5,7 +5,24 @@ import time
 import random
 import re
 
+# Created by Zain Alden Jaffal uni id 10344889
+# Shooting is a shooter game were you have to hit the target in a randomly
+#  generated map
+# the game starts with a 2x2 grid with two obstacles then the game increases
+# in complexity as the user progresses
+# highest complexity is a 5 x 5 grid
+# the player can change the shooting key
+# cheat codes
+# limits for unlimited bullets
+# nowall ball doesn't bounce from balls
+# ghost to move the character
+# p is a pause button
+# x exit pause
+# b boss mode
+# esc fullscreen
 
+
+# updates data entries
 def update_dictionary(mode, var_to_update):
     if mode == 0:
         player_settings['player_name'] = var_to_update
@@ -29,10 +46,12 @@ def update_dictionary(mode, var_to_update):
     player_settings_file.close()
 
 
+# move between the screens
+# destroy the previous screens' items
 def btn_switch(mode):
     global main_window, canvas, height, width, list_of_tk_items, canvas, \
         pause, screen_number, default_canvas_color, shoot_key, pause_btn,\
-        boss_key, unpause_btn, quitting
+        boss_key, unpause_btn, quitting, list_of_bound_btns
     pause = False
     main_window.unbind(shoot_key)
     main_window.unbind('<Motion>')
@@ -147,7 +166,7 @@ def res_two():
     update_dictionary(5, height)
     update_dictionary(6, width)
 
-
+# handles changing resolution
 def resolution_change():
     global width, height, main_window, list_of_tk_items
     btn_width = 720
@@ -168,6 +187,7 @@ def resolution_change():
     list_of_tk_items.append(back_btn)
 
 
+# change the shooter key
 def change_binding():
     global main_window, list_of_tk_items, bindbackground_img
     main_window.configure(background='#ff8429')
@@ -183,13 +203,17 @@ def change_binding():
 
 
 def bind_new_key(event):
-    global shoot_key, main_window, list_of_tk_items
-    shoot_key = '<' + event.keysym + '>'
-    update_dictionary(4, shoot_key)
-    info_key = 'key chosen was ' + event.keysym
-    main_window.unbind('<Key>')
-    messagebox.showinfo('Key changes!', info_key)
-    btn_switch(6)
+    global shoot_key, main_window, list_of_tk_items, list_of_bound_btns
+    if event.keysym in list_of_bound_btns:
+        messagebox.showerror('Error binding', 'key taken')
+        change_binding()
+    else:
+        shoot_key = '<' + event.keysym + '>'
+        update_dictionary(4, shoot_key)
+        info_key = 'key chosen was ' + event.keysym
+        main_window.unbind('<Key>')
+        messagebox.showinfo('Key changes!', info_key)
+        btn_switch(6)
 
 
 def pause_game(event):
@@ -199,6 +223,7 @@ def pause_game(event):
     pause_label = canvas.create_text(int(width / 2), int(height / 2),
                                      text='Paused',
                                      font='Times 50 bold')
+    # to stop the user from moving stuff while the pause is on
     main_window.unbind('<Motion>')
     main_window.unbind(shoot_key)
     main_window.unbind(pause_btn)
@@ -206,7 +231,7 @@ def pause_game(event):
     main_window.unbind('nowall')
     main_window.unbind('limits')
 
-
+# rebind everything and introduce a delay
 def unpause(event):
     global pause, shoot_key, main_window, boss_key, pause_btn, \
         width, height, pause_label
@@ -232,6 +257,7 @@ def unpause(event):
     canvas.delete(wait_label)
 
 
+# loads blackboard image as a boss key image
 def boss_key_start(event):
     global height, width, pause, main_window, work_scrn, pause_btn, canvas, \
         fullscreen_btn, list_of_tk_items
@@ -256,6 +282,7 @@ def boss_key_start(event):
     main_window.bind('b', boss_key_destroy)
 
 
+# stops boss key mode and returns back to bind everything
 def boss_key_destroy(event):
     global work_scrn, height, width, main_window, canvas, fullscreen_btn,\
            list_of_tk_items
@@ -277,6 +304,7 @@ def boss_key_destroy(event):
     main_window.bind(unpause_btn, unpause)
 
 
+# game cheats
 def cheat_no_walls(event):
     global no_walls
     no_walls = True
@@ -320,14 +348,17 @@ def player_move_cheat(event):
     main_window.bind('<Right>', move_right)
 
 
+# function triggered from the load button from main screen
 def load_start():
     global player_settings
+    # suspects that if there is no name that means a new player
     if player_settings['player_name'] == 'stock':
         btn_switch(7)
     else:
         btn_switch(0)
 
 
+# load contents from a file into a dictionary
 def load_game():
     global player_settings, level, canvas
     global score, lives, shoot_key, height, width
@@ -365,6 +396,8 @@ def load_game():
         update_dictionary(6, width)
 
 
+# read the contents of the leaderboard file
+# display a leaderboard in a descending order
 def leaderboard_read():
     global canvas, main_window, width, height, list_of_tk_items
     main_window.configure(background='#42db8e')
@@ -377,7 +410,7 @@ def leaderboard_read():
     list_of_tk_items.append(back_btn)
     list_of_tk_items.append(lead_label)
     canvas.pack()
-
+    # handles any errors
     try:
         y = height * 0.18
         read_leaderboard = open('leaderboard')
@@ -418,6 +451,7 @@ def leaderboard_read():
         btn_switch(6)
 
 
+# after the game finishes write info to the leaderboard file
 def leaderboard_write():
     leaderboard = open('leaderboard', 'a')
     string_single_entry = ''
@@ -431,6 +465,7 @@ def leaderboard_write():
         leaderboard.close()
 
 
+# resets everything in the game back to initial state
 def empty_game_lists():
     global ball, list_of_boxes, grid, ball_movement, player_box, \
         enemy_box, quitting
@@ -442,10 +477,8 @@ def empty_game_lists():
         enemy_box = 0
         player_box = 0
         canvas.delete('all')
-    else:
-        pass
 
-
+# restart button functionality
 def restart():
     global main_window, canvas, height, width, lives, \
         level, score
@@ -467,6 +500,8 @@ def restart():
     game_play()
 
 
+# toggle between current resolution and full screen
+# calls btn_switch to regenerate the
 def fullscreen_toggle(event):
     global screen_full, main_window, canvas, height, width, screen_number, \
         player_settings
@@ -512,15 +547,20 @@ def player_lost():
         level = 1
     update_dictionary(1, level)
     update_dictionary(3, lives)
-    messagebox.showinfo('LOST YA BASIC', 'YOU LOOOOOOOOSEEE')
+    messagebox.showinfo('Game WON', 'Try again')
 
 
+# mouse movement method
+# detects the vector from the pointer to the aim line
+# creates a unit vector
+# uses that to move the aim line
 def mouse_movement(event):
     global aim, player, current_player_img, pause, canvas, shoot_key
     x = canvas.canvasx(event.x)
     y = canvas.canvasy(event.y)
     rec_pos = player_hit_box()
     line_pos = canvas.coords(aim_line)
+    # flip the image to the other side
     if x < rec_pos[2]:
         line_pos[0] = rec_pos[0]
         line_pos[2] = rec_pos[0] - 50
@@ -536,12 +576,14 @@ def mouse_movement(event):
     vector_length = math.sqrt(i_component ** 2 + j_component ** 2)
     unit_vector_i = i_component / vector_length
     unit_vector_j = j_component / vector_length
+    # places correct coords for line
     canvas.coords(aim_line, line_pos[0], line_pos[1],
                   (unit_vector_i * 50) + line_pos[0],
                   (unit_vector_j * 50) + line_pos[1])
     canvas.update()
 
 
+# initiate ball move numbers depending on the aim line
 def shoot(event):
     global ball, aim_line, ball_movement, aim, player, current_player_img, \
         shoot_anim, idle, shoot_key
@@ -577,17 +619,19 @@ def shoot(event):
     if not quitting:
         canvas.itemconfig(player, image=idle, anchor='nw')
         current_player_img = idle
-
+        # add the generated ball to the list of balls
         ball.append(
             canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3] - 2,
                                pos_of_the_line[2] + 10,
                                pos_of_the_line[3] + 10,
                                fill='black'))
+        # add the vectors for ball movement to the list
         ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
     else:
         ball = []
 
 
+# move ball and check for collisions with other objects
 def ball_move():
     global ball, ball_movement, width, height, player, list_of_boxes, \
         enemy, no_walls, no_limit_bullets
@@ -605,8 +649,10 @@ def ball_move():
             return 1
         if ball_hits_object(ball[i], enemy):
             return 2
+        # check for the cheat code
         if not no_walls:
             if len(list_of_boxes) != 0:
+                # loop through the boxes to check collisions
                 for j in range(len(list_of_boxes)):
                     box_coords = canvas.coords(list_of_boxes[j])
                     if (box_coords[0] < i_coords[0] < box_coords[2]) or (
@@ -629,6 +675,7 @@ def ball_move():
         canvas.move(ball[i], ball_movement[i][0], ball_movement[i][1])
 
 
+# checking if ball hit the player or the enemy
 def ball_hits_object(i, j):
     i_coords = canvas.coords(i)
     box_coords = []
@@ -658,6 +705,7 @@ def ball_hits_object(i, j):
     return False
 
 
+# function to generate the grid so no item is placed on top of another item
 def create_grid(height, width, total):
     main_height = height * 0.9
     total_grid = []
@@ -681,6 +729,9 @@ def create_grid(height, width, total):
     return total_grid
 
 
+# player is an image with only one point in the nw corner
+# this is generated to check for a correct placement for pllayer and for the
+# collisions between ball and player
 def player_hit_box():
     global player, current_player_img
     if not pause:
@@ -691,6 +742,9 @@ def player_hit_box():
         return 0
 
 
+# enemy is an image with only one point in the nw corner
+# this is generated to check for a correct placement for enemy and for the
+# collisions between ball and enemy
 def enemy_hit_box():
     global enemy, enemy_img
     x2 = canvas.coords(enemy)[0] + enemy_img.width()
@@ -698,6 +752,7 @@ def enemy_hit_box():
     return [canvas.coords(enemy)[0], canvas.coords(enemy)[1], x2, y2]
 
 
+# place the player in the middle of a box in grid
 def place_player(grid):
     global player_box, player, aim_line, idle, current_player_img
     player_box = random.randint(0, len(grid) - 1)
@@ -715,6 +770,7 @@ def place_player(grid):
                   mid_rect + 50)
 
 
+# place enemy in a grid
 def place_enemy(grid, level):
     global enemy_box, enemy, player_box, enemy_img
     rec_size_x = enemy_img.width()
@@ -739,6 +795,8 @@ def place_enemy(grid, level):
     enemy = canvas.create_image(point_x, point_y, anchor='nw', image=enemy_img)
 
 
+# added complication for higher levels so the player and the enemy are not
+# placed in neighboring boxes
 def check_placement(grid, enemy_box, player_box):
     if grid[enemy_box][0] == grid[player_box][2] and \
             grid[enemy_box][1] == grid[player_box][3]:
@@ -785,6 +843,7 @@ def check_placement(grid, enemy_box, player_box):
     return False
 
 
+# generate different boxes in all of the remaining grid locations
 def generated_areas(list_of_grid):
     global enemy_box, player_box
     generated_boxes = []
@@ -809,6 +868,8 @@ def generated_areas(list_of_grid):
     return generated_boxes
 
 
+# generate the grid and the player and enemy placements
+# update counters and increase the complexity
 def game_set_up():
     global screen_number, canvas, level, score, width, height, list_of_boxes, \
            lives, list_of_tk_items, quitting
@@ -855,6 +916,7 @@ def game_set_up():
         list_of_boxes = generated_areas(grid)
 
 
+# moves the objects and binds the keys for menu, pause, boss key and cheats
 def game_play():
     global main_window, pause, lives, ball, screen_number, quitting
     screen_number = 0
@@ -916,10 +978,10 @@ def game_play():
     main_window.mainloop()
 
 
+# main menu to move between the different items
 def entry_menu():
     global main_window, height, width, canvas, height, width, \
         list_of_tk_items, no_limit_bullets, no_walls, screen_number
-    # load_game()
     no_limit_bullets = False
     no_walls = False
     btn_width = 720
@@ -954,6 +1016,7 @@ def entry_menu():
     list_of_tk_items.append(quit_key_btn)
 
 
+# intro screen
 def game_intro():
     global main_window, canvas, player_settings, intro_title, player_image, \
            enemy_image, start_btn_img, screen_number
@@ -1001,12 +1064,16 @@ height = player_settings['screen_height']
 
 main_window = Tk()
 main_window.geometry(str(width) + 'x' + str(height))
-# main_window.resizable(0, 0)
 screen_full = False
 screen_number = 6
-# main_window.wm_attributes('-topmost', 1)
 main_window.wm_attributes('-fullscreen', False)
+shoot_key = player_settings['shoot_key']
+list_of_bound_btns = ['<Escape>', 'p', 'x', 'b', 'Up', 'Down',
+                      'Left', 'Right']
 fullscreen_btn = '<Escape>'
+pause_btn = 'p'
+unpause_btn = 'x'
+boss_key = 'b'
 main_window.bind(fullscreen_btn, fullscreen_toggle)
 main_window.configure(background='#d9d9d9')
 grid = []
@@ -1029,15 +1096,11 @@ work_scrn = None
 no_walls = False
 no_limit_bullets = False
 restart_btn = None
-shoot_key = player_settings['shoot_key']
 score = player_settings['score']
 lives = player_settings['lives']
 pause = False
 quitting = False
 pause_label = None
-pause_btn = 'p'
-unpause_btn = 'x'
-boss_key = 'b'
 work = PhotoImage(file='work.png')
 aim.append(PhotoImage(file='./Aim/Aim_01.png'))
 aim.append(PhotoImage(file='./Aim/Aim_02.png'))
