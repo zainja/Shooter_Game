@@ -918,9 +918,9 @@ def game_intro():
                               font='Times 20 bold')
         welcome_label.place(relx=0.5, rely=0.05, anchor='center')
         save_txt = 'Your last game was saved score: ' + \
-                   player_settings['score'] + '  level: ' + \
-                   player_settings['level'] + '  lives: ' +\
-                   player_settings['lives']
+                   str(player_settings['score']) + '  level: ' + \
+                   str(player_settings['level']) + '  lives: ' +\
+                   str(player_settings['lives'])
         save_label = Label(main_window, text=save_txt, font='Times 20 bold')
         save_label.place(relx=0.5, rely=0.9, anchor='center')
     intro_title_label = Label(main_window, image=intro_title)
