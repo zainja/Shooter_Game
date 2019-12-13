@@ -32,10 +32,17 @@ def update_dictionary(mode, var_to_update):
 
 def btn_switch(mode):
     global main_window, canvas, height, width, list_of_tk_items, canvas, \
-        pause, screen_number, default_canvas_color
+        pause, screen_number, default_canvas_color, shoot_key, pause_btn,\
+        boss_key
+    main_window.unbind(shoot_key)
+    main_window.unbind('<Motion>')
+    main_window.unbind(pause_btn)
+    main_window.unbind(boss_key)
+    main_window.unbind('nowall')
+    main_window.unbind('limits')
     main_window.unbind('<Key>')
     screen_number = mode
-    canvas.delete('all')
+    empty_game_lists()
     main_window.configure(background='#d9d9d9')
     canvas.configure(bg='#d9d9d9')
     for items in list_of_tk_items:
@@ -314,9 +321,6 @@ def load_game():
 
 def leaderboard_read():
     global canvas, main_window, width, height, list_of_tk_items
-    # canvas.create_image(width * 0.2, 0,
-    #                     image=leaderboard_background_img,
-    #                     anchor='nw')
     main_window.configure(background='#42db8e')
     canvas.configure(bg='#42db8e')
     lead_label = Label(main_window, image=leaderboard_btn_img)
@@ -342,7 +346,10 @@ def leaderboard_read():
             read_list.append([name, int(x[len(x)-1])])
         read_list = sorted(read_list, key=lambda x: x[1], reverse=True)
         print(read_list)
-        for entries in range(0, len(read_list)):
+        max_board = len(read_list)
+        if max_board > 8:
+            max_board = 8
+        for entries in range(0, max_board):
             place = str(entries+1)+'th'
             if entries == 0:
                 place = '1st'
@@ -741,27 +748,31 @@ def game_set_up():
     global screen_number, canvas, level, score, width, height, list_of_boxes, \
         lives
     total = 0
-    level_x_pos = int(width * 0.05)
+    level_x_pos = int(width * 0.02)
     labels_y_pos = int((0.1 * height) / 3)
-    score_x_pos = int(width * 0.15)
-    lives_x_pos = int(width * 0.3)
+    lives_x_pos = int(width * 0.1)
+    score_x_pos = int(width * 0.29)
     level_txt = 'level: ' + str(level)
-    score_txt = 'score: ' + str(score)
     lives_text = 'lives: ' + str(lives)
+    score_txt = 'score: ' + str(score)
     canvas.create_rectangle(0, 0, width, height * 0.1, fill='red')
     canvas.create_text(level_x_pos, labels_y_pos,
-                       font='Times 20 bold',
+                       font='Times 20',
                        text=level_txt, anchor='nw')
-    canvas.create_text(score_x_pos, labels_y_pos,
-                       font='Times 20 bold',
-                       text=score_txt, anchor='nw')
     canvas.create_text(lives_x_pos, labels_y_pos,
-                       font='Times 20 bold',
+                       font='Times 20',
                        text=lives_text, anchor='nw')
+    canvas.create_text(score_x_pos, labels_y_pos,
+                       font='Times 20',
+                       text=score_txt, anchor='nw')
     restart_btn = Button(canvas, text='restart', width=4, height=2,
                          command=lambda: restart())
-    restart_btn.place(relx=0.9, rely=0.05, anchor='center')
+    restart_btn.place(relx=0.95, rely=0.05, anchor='center')
+    main_btn = Button(canvas, text='main menu', width=6, height=2,
+                      command=lambda: btn_switch(6))
+    main_btn.place(relx=0.87, rely=0.05, anchor='center')
     list_of_tk_items.append(restart_btn)
+    list_of_tk_items.append(main_btn)
     if level == 1:
         total = 2
     if level == 2:
@@ -785,13 +796,13 @@ def game_play():
         empty_game_lists()
         game_set_up()
         bullet = 3
-        bullet_label = canvas.create_text(int(width * 0.45),
+        bullet_label = canvas.create_text(int(width * 0.19),
                                           int((0.1 * height) / 3),
-                                          font='Times 20 bold',
+                                          font='Times 20',
                                           anchor='nw')
         wall_cheat = canvas.create_text(int(width * 0.7),
                                         int((0.1 * height) / 3),
-                                        font='Times 20 bold',
+                                        font='Times 20',
                                         anchor='nw')
         main_window.bind('<Motion>', mouse_movement)
         main_window.bind(shoot_key, shoot)
@@ -802,12 +813,12 @@ def game_play():
         canvas.pack()
         while True:
             bullet = 3 - len(ball)
-            canvas.itemconfig(bullet_label, text='Bullets: ' + str(bullet))
+            canvas.itemconfig(bullet_label, text='bullets: ' + str(bullet))
             if not no_limit_bullets:
                 if len(ball) == 3:
                     main_window.unbind(shoot_key)
             else:
-                canvas.itemconfig(bullet_label, text='Bullets: unlimited')
+                canvas.itemconfig(bullet_label, text='bullets: ∞')
             if no_walls:
                 canvas.itemconfig(wall_cheat, text='no wall active')
             if not pause:
@@ -822,8 +833,6 @@ def game_play():
                     break
                 time.sleep(0.006)
             canvas.update()
-    main_window.unbind(shoot_key)
-    main_window.unbind('<Motion>')
     messagebox.showinfo('Game lost', 'You have no lives left')
     leaderboard_write()
     btn_switch(2)
