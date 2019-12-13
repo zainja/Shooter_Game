@@ -74,6 +74,7 @@ def btn_switch(mode):
         main_window.configure(bg='#00fefe')
         enter_name()
     if mode == 8:
+        canvas.delete('all')
         pause = True
         entry_menu()
 
@@ -286,6 +287,39 @@ def unlimited_bullets(event):
     no_limit_bullets = True
 
 
+def move_up(event):
+    global player, aim_line
+    canvas.move(player, 0, -5)
+    canvas.move(aim_line, 0, -5)
+
+
+def move_down(event):
+    global player, aim_line
+    canvas.move(player, 0, 5)
+    canvas.move(aim_line, 0, 5)
+
+
+def move_left(event):
+    global player, aim_line
+    canvas.move(player, -5, 0)
+    canvas.move(aim_line, -5, 0)
+
+
+def move_right(event):
+    global player, aim_line
+    canvas.move(player, 5, 0)
+    canvas.move(aim_line, 5, 0)
+
+
+def player_move_cheat(event):
+    global main_window, list_of_boxes, no_walls
+    no_walls = True
+    main_window.bind('<Up>', move_up)
+    main_window.bind('<Down>', move_down)
+    main_window.bind('<Left>', move_left)
+    main_window.bind('<Right>', move_right)
+
+
 def load_start():
     global player_settings
     if player_settings['player_name'] == 'stock':
@@ -399,7 +433,7 @@ def leaderboard_write():
 
 def empty_game_lists():
     global ball, list_of_boxes, grid, ball_movement, player_box, \
-        enemy_box,quitting
+        enemy_box, quitting
     if not quitting:
         ball = []
         list_of_boxes = []
@@ -444,7 +478,10 @@ def fullscreen_toggle(event):
         canvas.configure(width=width,
                          height=height)
         canvas.pack()
-        btn_switch(screen_number)
+        if screen_number == -1:
+            game_intro()
+        else:
+            btn_switch(screen_number)
     else:
         screen_full = False
         main_window.wm_attributes('-fullscreen', False)
@@ -452,7 +489,10 @@ def fullscreen_toggle(event):
         height = int(player_settings['screen_height'])
         canvas.configure(width=width, height=height)
         canvas.pack()
-        btn_switch(screen_number)
+        if screen_number == -1:
+            game_intro()
+        else:
+            btn_switch(screen_number)
 
 
 def player_won():
@@ -523,16 +563,17 @@ def shoot(event):
             current_player_img = shoot_anim[i]
             canvas.update()
     else:
-        for i in range(1, len(aim_f) - 1):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=aim_f[i], anchor='ne')
-            current_player_img = aim_f[i]
-            canvas.update()
-        for i in range(0, len(shoot_anim_f)):
-            time.sleep(0.1)
-            canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
-            current_player_img = shoot_anim_f[i]
-            canvas.update()
+        if not quitting:
+            for i in range(1, len(aim_f) - 1):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=aim_f[i], anchor='ne')
+                current_player_img = aim_f[i]
+                canvas.update()
+            for i in range(0, len(shoot_anim_f)):
+                time.sleep(0.1)
+                canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
+                current_player_img = shoot_anim_f[i]
+                canvas.update()
     if not quitting:
         canvas.itemconfig(player, image=idle, anchor='nw')
         current_player_img = idle
@@ -591,10 +632,14 @@ def ball_move():
 def ball_hits_object(i, j):
     i_coords = canvas.coords(i)
     box_coords = []
+    if i == player:
+        i_coords = player_hit_box()
     if j == player:
         box_coords = player_hit_box()
     if j == enemy:
         box_coords = enemy_hit_box()
+    if (j != enemy) and (j != player):
+        box_coords = canvas.coords(j)
     # check for right and left
     if (box_coords[1] <= i_coords[1] <= box_coords[3]) or (
             box_coords[1] <= i_coords[3] <= box_coords[3]):
@@ -827,6 +872,7 @@ def game_play():
                                                 int((0.1 * height) / 3),
                                                 font='Times 20',
                                                 anchor='nw')
+                main_window.bind('ghost', player_move_cheat)
                 main_window.bind('<Motion>', mouse_movement)
                 main_window.bind(shoot_key, shoot)
                 main_window.bind(pause_btn, pause_game)
@@ -911,7 +957,7 @@ def entry_menu():
 def game_intro():
     global main_window, canvas, player_settings, intro_title, player_image, \
            enemy_image, start_btn_img, screen_number
-    # screen_number= -1
+    screen_number = -1
     if player_settings['player_name'] != 'stock':
         welcome_label = Label(main_window, text='Welcome back ' +
                                                 player_settings['player_name'],
@@ -923,6 +969,8 @@ def game_intro():
                    str(player_settings['lives'])
         save_label = Label(main_window, text=save_txt, font='Times 20 bold')
         save_label.place(relx=0.5, rely=0.9, anchor='center')
+        list_of_tk_items.append(welcome_label)
+        list_of_tk_items.append(save_label)
     intro_title_label = Label(main_window, image=intro_title)
     intro_title_label.place(relx=0.5, rely=0.63, anchor='center')
     player_label = Label(main_window, image=player_image)
@@ -935,9 +983,8 @@ def game_intro():
     list_of_tk_items.append(intro_title_label)
     list_of_tk_items.append(player_label)
     list_of_tk_items.append(enemy_label)
-    list_of_tk_items.append(welcome_label)
-    list_of_tk_items.append(save_label)
     list_of_tk_items.append(start_btn)
+
 
 # var deceleration
 player_settings = {
