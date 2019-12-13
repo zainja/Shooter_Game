@@ -33,10 +33,11 @@ def update_dictionary(mode, var_to_update):
 def btn_switch(mode):
     global main_window, canvas, height, width, list_of_tk_items, canvas, \
         pause, screen_number, default_canvas_color, shoot_key, pause_btn,\
-        boss_key
+        boss_key, unpause_btn
     main_window.unbind(shoot_key)
     main_window.unbind('<Motion>')
     main_window.unbind(pause_btn)
+    main_window.unbind(unpause_btn)
     main_window.unbind(boss_key)
     main_window.unbind('nowall')
     main_window.unbind('limits')
@@ -76,7 +77,6 @@ def btn_switch(mode):
 def enter_name():
     global main_window, width, list_of_tk_items, halt, enter_name_bg,\
             string_var, default_canvas_color
-    halt = False
     main_window.configure(bg='#00fefe')
     label_enter_name = Label(main_window, image=enter_name_bg, relief='flat',
                              highlightcolor='#00fefe')
@@ -134,9 +134,9 @@ def mid_res():
 
 def small_res():
     global width
-    width = 800
+    width = 1000
     global height
-    height = 600
+    height = 1000
     main_window.geometry(str(width) + 'x' + str(height))
     canvas.configure(width=width, height=height)
     update_dictionary(5, height)
@@ -229,11 +229,13 @@ def unpause(event):
 
 def boss_key_start(event):
     global height, width, pause, main_window, work_scrn, pause_btn, canvas, \
-        fullscreen_btn
+        fullscreen_btn, list_of_tk_items
     pause = True
     main_window.wm_attributes('-fullscreen', True)
     work_scrn_width = main_window.winfo_screenwidth()
     work_scrn_height = main_window.winfo_screenheight()
+    for items in list_of_tk_items:
+        items.destroy()
     print(work_scrn_width)
     print(work_scrn_height)
     canvas.configure(width=work_scrn_width,
@@ -252,9 +254,18 @@ def boss_key_start(event):
 
 
 def boss_key_destroy(event):
-    global work_scrn, height, width, main_window, canvas, fullscreen_btn
+    global work_scrn, height, width, main_window, canvas, fullscreen_btn,\
+           list_of_tk_items
     if not screen_full:
         main_window.wm_attributes('-fullscreen', False)
+    restart_btn = Button(canvas, text='restart', width=4, height=2,
+                         command=lambda: restart())
+    restart_btn.place(relx=0.95, rely=0.05, anchor='center')
+    main_btn = Button(canvas, text='main menu', width=6, height=2,
+                      command=lambda: btn_switch(6))
+    main_btn.place(relx=0.87, rely=0.05, anchor='center')
+    list_of_tk_items.append(restart_btn)
+    list_of_tk_items.append(main_btn)
     main_window.geometry(str(width) + 'x' + str(height))
     canvas.configure(width=width, height=height)
     canvas.delete(work_scrn)
@@ -283,8 +294,7 @@ def load_start():
 
 def load_game():
     global player_settings, level, canvas
-    global score, lives, shoot_key, height, width, halt
-    halt = False
+    global score, lives, shoot_key, height, width
     try:
         game_settings_read = open('player_settings')
         game_settings_read_items = game_settings_read.read().split('\n')
@@ -402,6 +412,14 @@ def empty_game_lists():
 def restart():
     global main_window, canvas, height, width, lives, \
         level, score
+    main_window.unbind(shoot_key)
+    main_window.unbind('<Motion>')
+    main_window.unbind(pause_btn)
+    main_window.unbind(unpause_btn)
+    main_window.unbind(boss_key)
+    main_window.unbind('nowall')
+    main_window.unbind('limits')
+    main_window.unbind('<Key>')
     level = 1
     update_dictionary(1, level)
     score = 0
@@ -483,45 +501,44 @@ def mouse_movement(event):
 
 def shoot(event):
     global ball, aim_line, ball_movement, aim, player, current_player_img, \
-        shoot_anim, idle, shoot_key, halt
-    if not halt:
-        pos_of_the_line = canvas.coords(aim_line)
-        i_component = pos_of_the_line[2] - pos_of_the_line[0]
-        j_component = pos_of_the_line[3] - pos_of_the_line[1]
-        vector_length = math.sqrt(i_component ** 2 + j_component ** 2)
-        unit_vector_i = i_component / vector_length
-        unit_vector_j = j_component / vector_length
-        if current_player_img == aim[0]:
-            for i in range(1, len(aim) - 1):
-                time.sleep(0.1)
-                canvas.itemconfig(player, image=aim[i])
-                current_player_img = aim[i]
-                canvas.update()
-            for i in range(0, len(shoot_anim)):
-                time.sleep(0.1)
-                canvas.itemconfig(player, image=shoot_anim[i])
-                current_player_img = shoot_anim[i]
-                canvas.update()
-        else:
-            for i in range(1, len(aim_f) - 1):
-                time.sleep(0.1)
-                canvas.itemconfig(player, image=aim_f[i], anchor='ne')
-                current_player_img = aim_f[i]
-                canvas.update()
-            for i in range(0, len(shoot_anim_f)):
-                time.sleep(0.1)
-                canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
-                current_player_img = shoot_anim_f[i]
-                canvas.update()
-        canvas.itemconfig(player, image=idle, anchor='nw')
-        current_player_img = idle
+        shoot_anim, idle, shoot_key
+    pos_of_the_line = canvas.coords(aim_line)
+    i_component = pos_of_the_line[2] - pos_of_the_line[0]
+    j_component = pos_of_the_line[3] - pos_of_the_line[1]
+    vector_length = math.sqrt(i_component ** 2 + j_component ** 2)
+    unit_vector_i = i_component / vector_length
+    unit_vector_j = j_component / vector_length
+    if current_player_img == aim[0]:
+        for i in range(1, len(aim) - 1):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=aim[i])
+            current_player_img = aim[i]
+            canvas.update()
+        for i in range(0, len(shoot_anim)):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=shoot_anim[i])
+            current_player_img = shoot_anim[i]
+            canvas.update()
+    else:
+        for i in range(1, len(aim_f) - 1):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=aim_f[i], anchor='ne')
+            current_player_img = aim_f[i]
+            canvas.update()
+        for i in range(0, len(shoot_anim_f)):
+            time.sleep(0.1)
+            canvas.itemconfig(player, image=shoot_anim_f[i], anchor='ne')
+            current_player_img = shoot_anim_f[i]
+            canvas.update()
+    canvas.itemconfig(player, image=idle, anchor='nw')
+    current_player_img = idle
 
-        ball.append(
-            canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3] - 2,
-                               pos_of_the_line[2] + 10,
-                               pos_of_the_line[3] + 10,
-                               fill='black'))
-        ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
+    ball.append(
+        canvas.create_oval(pos_of_the_line[2] - 2, pos_of_the_line[3] - 2,
+                           pos_of_the_line[2] + 10,
+                           pos_of_the_line[3] + 10,
+                           fill='black'))
+    ball_movement.append([unit_vector_i * 2, unit_vector_j * 2])
 
 
 def ball_move():
@@ -746,7 +763,7 @@ def generated_areas(list_of_grid):
 
 def game_set_up():
     global screen_number, canvas, level, score, width, height, list_of_boxes, \
-        lives
+           lives, list_of_tk_items
     total = 0
     level_x_pos = int(width * 0.02)
     labels_y_pos = int((0.1 * height) / 3)
@@ -790,7 +807,7 @@ def game_set_up():
 
 
 def game_play():
-    global main_window, pause, lives, ball, screen_number
+    global main_window, pause, lives, ball, screen_number, quitting
     screen_number = 0
     while lives != 0:
         empty_game_lists()
@@ -877,7 +894,7 @@ def entry_menu():
     list_of_tk_items.append(quit_key_btn)
 
 
-# var decleration
+# var deceleration
 player_settings = {
     'player_name': 'stock',
     'level': 1,
@@ -910,7 +927,6 @@ aim_line = None
 enemy = None
 player_box = 0
 enemy_box = 0
-#00fefe
 canvas = Canvas(main_window, width=width, height=height)
 level = player_settings['level']
 enemy_img = PhotoImage(file='./enemy/enemy.png')
@@ -926,6 +942,7 @@ shoot_key = player_settings['shoot_key']
 score = player_settings['score']
 lives = player_settings['lives']
 pause = False
+quitting = False
 pause_label = None
 pause_btn = 'p'
 unpause_btn = 'x'
@@ -954,7 +971,6 @@ shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_03F.png'))
 shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_04F.png'))
 shoot_anim_f.append(PhotoImage(file='./Shoot/Shoot_05F.png'))
 idle = PhotoImage(file='./Idle/Idle_01.png')
-halt = False
 play_btn_img = PhotoImage(file='./btns/play_btn.png')
 load_btn_img = PhotoImage(file='./btns/load_btn.png')
 leaderboard_btn_img = PhotoImage(file='./btns/leaderboard_btn.png')
