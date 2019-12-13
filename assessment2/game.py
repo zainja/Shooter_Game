@@ -859,7 +859,7 @@ def game_play():
 def entry_menu():
     global main_window, height, width, canvas, height, width, \
         list_of_tk_items, no_limit_bullets, no_walls, screen_number
-    load_game()
+    # load_game()
     no_limit_bullets = False
     no_walls = False
     btn_width = 720
@@ -894,7 +894,33 @@ def entry_menu():
     list_of_tk_items.append(quit_key_btn)
 
 
+def game_intro():
+    global main_window, canvas, player_settings, intro_title, player_image, \
+           enemy_image, start_btn_img, screen_number
+    screen_number= -1
+    if player_settings['player_name'] != 'stock':
+        welcome_label = Label(main_window, text='Welcome back ' +
+                                                player_settings['player_name'],
+                              font='Times 20 bold')
+        welcome_label.place(relx=0.5, rely=0.05, anchor='center')
+    intro_title_label = Label(main_window, image=intro_title)
+    intro_title_label.place(relx=0.5, rely=0.63, anchor='center')
+    player_label = Label(main_window, image=player_image)
+    player_label.place(relx=0.3, rely=0.3, anchor='center')
+    enemy_label = Label(main_window, image=enemy_image)
+    enemy_label.place(relx=0.9, rely=0.3, anchor='center')
+    start_btn = Button(image=start_btn_img,
+                       command=lambda: btn_switch(6))
+    start_btn.place(relx=0.5, rely=0.8, anchor='center')
+    list_of_tk_items.append(intro_title_label)
+    list_of_tk_items.append(player_label)
+    list_of_tk_items.append(enemy_label)
+    list_of_tk_items.append(welcome_label)
+    list_of_tk_items.append(start_btn)
+
 # var deceleration
+
+
 player_settings = {
     'player_name': 'stock',
     'level': 1,
@@ -904,7 +930,6 @@ player_settings = {
     'screen_height': 900,
     'screen_width': 1200
 }
-
 width = player_settings['screen_width']
 height = player_settings['screen_height']
 
@@ -985,8 +1010,13 @@ enter_name_bg = PhotoImage(file='./btns/enter_name.png')
 start_btn_img = PhotoImage(file='./btns/start_btn_img.png')
 bindbackground_img = PhotoImage(file='./btns/bindbackground.png')
 leaderboard_background_img = PhotoImage(file='./btns/leaderboard_back.png')
+intro_title = PhotoImage(file='./intro/title_game.png')
+enemy_image = PhotoImage(file='./intro/intro_enemy.png')
+player_image = PhotoImage(file='./intro/intro_player.png')
 
 list_of_tk_items = []
 current_player_img = idle
-entry_menu()
+load_game()
+game_intro()
+#entry_menu()
 main_window.mainloop()
