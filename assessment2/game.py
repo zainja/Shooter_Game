@@ -34,6 +34,7 @@ def btn_switch(mode):
     global main_window, canvas, height, width, list_of_tk_items, canvas, \
         pause, screen_number, default_canvas_color, shoot_key, pause_btn,\
         boss_key, unpause_btn
+    pause = False
     main_window.unbind(shoot_key)
     main_window.unbind('<Motion>')
     main_window.unbind(pause_btn)
@@ -72,6 +73,9 @@ def btn_switch(mode):
         canvas.configure(bg='#00fefe')
         main_window.configure(bg='#00fefe')
         enter_name()
+    if mode == 8:
+        pause = True
+        entry_menu()
 
 
 def enter_name():
@@ -636,9 +640,12 @@ def create_grid(height, width, total):
 
 def player_hit_box():
     global player, current_player_img
-    x2 = canvas.coords(player)[0] + current_player_img.width()
-    y2 = canvas.coords(player)[1] + current_player_img.height()
-    return [canvas.coords(player)[0], canvas.coords(player)[1], x2, y2]
+    if not pause:
+        x2 = canvas.coords(player)[0] + current_player_img.width()
+        y2 = canvas.coords(player)[1] + current_player_img.height()
+        return [canvas.coords(player)[0], canvas.coords(player)[1], x2, y2]
+    else:
+        return 0
 
 
 def enemy_hit_box():
@@ -786,7 +793,7 @@ def game_set_up():
                          command=lambda: restart())
     restart_btn.place(relx=0.95, rely=0.05, anchor='center')
     main_btn = Button(canvas, text='main menu', width=6, height=2,
-                      command=lambda: btn_switch(6))
+                      command=lambda: btn_switch(8))
     main_btn.place(relx=0.87, rely=0.05, anchor='center')
     list_of_tk_items.append(restart_btn)
     list_of_tk_items.append(main_btn)
@@ -830,7 +837,8 @@ def game_play():
         canvas.pack()
         while True:
             bullet = 3 - len(ball)
-            canvas.itemconfig(bullet_label, text='bullets: ' + str(bullet))
+            if not pause:
+                canvas.itemconfig(bullet_label, text='bullets: ' + str(bullet))
             if not no_limit_bullets:
                 if len(ball) == 3:
                     main_window.unbind(shoot_key)
@@ -897,7 +905,7 @@ def entry_menu():
 def game_intro():
     global main_window, canvas, player_settings, intro_title, player_image, \
            enemy_image, start_btn_img, screen_number
-    screen_number= -1
+    # screen_number= -1
     if player_settings['player_name'] != 'stock':
         welcome_label = Label(main_window, text='Welcome back ' +
                                                 player_settings['player_name'],
