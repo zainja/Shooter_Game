@@ -1158,3 +1158,4 @@ current_player_img = idle
 load_game()
 game_intro()
 main_window.mainloop()
+
