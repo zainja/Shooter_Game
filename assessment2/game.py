@@ -99,8 +99,7 @@ def btn_switch(mode):
 
 
 def enter_name():
-    global main_window, width, list_of_tk_items, halt, enter_name_bg,\
-            string_var, default_canvas_color
+    global main_window, width, list_of_tk_items, halt, enter_name_bg
     main_window.configure(bg='#00fefe')
     label_enter_name = Label(main_window, image=enter_name_bg, relief='flat',
                              highlightcolor='#00fefe')
@@ -166,6 +165,7 @@ def res_two():
     update_dictionary(5, height)
     update_dictionary(6, width)
 
+
 # handles changing resolution
 def resolution_change():
     global width, height, main_window, list_of_tk_items
@@ -230,6 +230,7 @@ def pause_game(event):
     main_window.bind(unpause_btn, unpause)
     main_window.unbind('nowall')
     main_window.unbind('limits')
+
 
 # rebind everything and introduce a delay
 def unpause(event):
@@ -399,7 +400,7 @@ def load_game():
 # read the contents of the leaderboard file
 # display a leaderboard in a descending order
 def leaderboard_read():
-    global canvas, main_window, width, height, list_of_tk_items
+    global canvas, main_window, width, height, list_of_tk_items, game_ended
     main_window.configure(background='#42db8e')
     canvas.configure(bg='#42db8e')
     lead_label = Label(main_window, image=leaderboard_btn_img)
@@ -446,6 +447,12 @@ def leaderboard_read():
             y += height * 0.1
         canvas.pack()
         read_leaderboard.close()
+        if game_ended:
+            play_again = Button(main_window, image=play_agian_btn,
+                              command=lambda: btn_switch(7))
+            play_again.place(relx=0.3, rely=0.95, anchor='center')
+            list_of_tk_items.append(play_again)
+            game_ended = False
     except IOError:
         messagebox.showerror('File not found', 'there is no previous games')
         btn_switch(6)
@@ -477,6 +484,7 @@ def empty_game_lists():
         enemy_box = 0
         player_box = 0
         canvas.delete('all')
+
 
 # restart button functionality
 def restart():
@@ -547,7 +555,7 @@ def player_lost():
         level = 1
     update_dictionary(1, level)
     update_dictionary(3, lives)
-    messagebox.showinfo('Game WON', 'Try again')
+    messagebox.showinfo('Game Lost', 'Try again')
 
 
 # mouse movement method
@@ -918,7 +926,7 @@ def game_set_up():
 
 # moves the objects and binds the keys for menu, pause, boss key and cheats
 def game_play():
-    global main_window, pause, lives, ball, screen_number, quitting
+    global main_window, pause, lives, ball, screen_number, quitting, game_ended
     screen_number = 0
     if not quitting:
         while lives != 0:
@@ -974,6 +982,7 @@ def game_play():
         if not quitting:
             messagebox.showinfo('Game lost', 'You have no lives left')
             leaderboard_write()
+            game_ended = True
             btn_switch(2)
     main_window.mainloop()
 
@@ -1100,6 +1109,7 @@ score = player_settings['score']
 lives = player_settings['lives']
 pause = False
 quitting = False
+game_ended = False
 pause_label = None
 work = PhotoImage(file='work.png')
 aim.append(PhotoImage(file='./Aim/Aim_01.png'))
@@ -1135,6 +1145,7 @@ mid_res_btn_img = PhotoImage(file='./btns/mid_res_btn.png')
 small_res_btn_img = PhotoImage(file='./btns/small_res_btn_img.png')
 back_btn_img = PhotoImage(file='./btns/back_btn_img.png')
 back_btn_small_img = PhotoImage(file='./btns/back_btn_small_img.png')
+play_agian_btn = PhotoImage(file='./btns/playagain_btn_small_img.png')
 enter_name_bg = PhotoImage(file='./btns/enter_name.png')
 start_btn_img = PhotoImage(file='./btns/start_btn_img.png')
 bindbackground_img = PhotoImage(file='./btns/bindbackground.png')
